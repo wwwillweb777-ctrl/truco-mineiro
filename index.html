@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Truco Mineiro Online 🎲</title>
+    <link rel="stylesheet" href="css/estilo.css">
+</head>
+<body>
+
+    <header>
+        <h1>🎲 TRUCO MINEIRO ONLINE</h1>
+        <p>Veja quem está jogando, escolha seu parceiro e entre!</p>
+    </header>
+
+    <main>
+        <!-- TELA DE MATRÍCULA -->
+        <section id="tela-matricula">
+            <h2>📝 MATRICULE-SE PARA JOGAR</h2>
+            <input type="text" id="campo-nome" placeholder="Digite seu nome..." maxlength="15">
+            <button id="botao-matricular">✅ MATRICULAR-SE</button>
+            <p id="aviso-matricula"></p>
+        </section>
+
+        <!-- TELA PRINCIPAL DO JOGO -->
+        <section id="tela-jogo" style="display: none;">
+            <div class="identificador">
+                <strong>Seu identificador:</strong> <span id="meu-id"></span>
+            </div>
+
+            <h3>🏆 JOGANDO AGORA</h3>
+            <div id="lista-jogando">
+                <p>Ninguém jogando no momento.</p>
+            </div>
+
+            <h3>⏳ AGUARDANDO NA FILA</h3>
+            <div id="lista-espera">
+                <p>Ninguém na fila de espera.</p>
+            </div>
+
+            <h3>🎯 ESCOLHA O FORMATO DE PARTIDA</h3>
+            <div class="botoes-formato">
+                <button id="botao-2jogadores">🔵 2 Jogadores (1x1)</button>
+                <button id="botao-4jogadores">🔴 4 Jogadores (Duplas)</button>
+            </div>
+        </section>
+    </main>
+
+    <script src="js/logica.js"></script>
+</body>
+</html>
