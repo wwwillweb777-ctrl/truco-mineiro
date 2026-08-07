@@ -1,3 +1,192 @@
+/* ===== ESTILO GERAL DO JOGO TRUCO MINEIRO ===== */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Roboto, sans-serif;
+}
+
+body {
+    background: linear-gradient(135deg, #1e3a5f, #2d5f8a);
+    min-height: 100vh;
+    color: #fff;
+    padding: 20px;
+}
+
+header {
+    text-align: center;
+    padding: 30px 20px;
+    margin-bottom: 30px;
+    background: rgba(0,0,0,0.25);
+    border-radius: 16px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+
+header h1 {
+    font-size: 2.5rem;
+    color: #ffd700;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    margin-bottom: 10px;
+}
+
+header p {
+    font-size: 1.1rem;
+    color: #e0e0e0;
+}
+
+main {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+section {
+    background: rgba(255,255,255,0.08);
+    padding: 25px;
+    margin-bottom: 25px;
+    border-radius: 14px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+h2, h3 {
+    color: #ffd700;
+    margin-bottom: 18px;
+    border-bottom: 2px solid rgba(255,215,0,0.3);
+    padding-bottom: 8px;
+}
+
+/* ===== TELA DE MATRÍCULA ===== */
+#campo-nome {
+    width: 100%;
+    padding: 14px;
+    font-size: 1.1rem;
+    border: none;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    background: rgba(255,255,255,0.95);
+    color: #222;
+}
+
+button {
+    padding: 14px 24px;
+    font-size: 1.05rem;
+    font-weight: bold;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+#botao-matricular {
+    background: linear-gradient(90deg, #28a745, #20c997);
+    color: white;
+    width: 100%;
+}
+
+#botao-matricular:hover {
+    background: linear-gradient(90deg, #218838, #1abc9c);
+}
+
+#aviso-matricula {
+    margin-top: 12px;
+    font-size: 1rem;
+    min-height: 24px;
+}
+
+/* ===== IDENTIFICADOR DO JOGADOR ===== */
+.identificador {
+    background: rgba(255,215,0,0.15);
+    padding: 12px 16px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    font-size: 1.1rem;
+}
+
+.identificador span {
+    color: #ffd700;
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+/* ===== LISTAS DE JOGADORES ===== */
+#lista-jogando, #lista-espera {
+    background: rgba(0,0,0,0.2);
+    padding: 15px;
+    border-radius: 10px;
+    min-height: 60px;
+}
+
+/* ===== BOTÕES DE FORMATO ===== */
+.botoes-formato {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+#botao-2jogadores {
+    background: linear-gradient(90deg, #007bff, #00bfff);
+    color: white;
+    flex: 1;
+    min-width: 200px;
+}
+
+#botao-4jogadores {
+    background: linear-gradient(90deg, #dc3545, #ff6347);
+    color: white;
+    flex: 1;
+    min-width: 200px;
+}
+
+/* ===== BOTÕES DE MODO DE JOGO ===== */
+.botoes-modo {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.botao-modo {
+    background: linear-gradient(90deg, #4b2e83, #6a48b8);
+    color: white;
+    width: 100%;
+    text-align: left;
+    padding: 16px 24px;
+    font-size: 1.05rem;
+}
+
+.botao-modo:hover {
+    background: linear-gradient(90deg, #3a2469, #5a3aa0);
+    transform: translateX(5px);
+}
+
+#modo-pessoas {
+    background: linear-gradient(90deg, #007bff, #00bfff);
+}
+#modo-pessoas:hover {
+    background: linear-gradient(90deg, #0056b3, #0099cc);
+}
+
+#modo-maquina-1x1 {
+    background: linear-gradient(90deg, #28a745, #20c997);
+}
+#modo-maquina-1x1:hover {
+    background: linear-gradient(90deg, #1e7e34, #17a589);
+}
+
+#modo-maquina-duplas {
+    background: linear-gradient(90deg, #ffc107, #fd7e14);
+    color: #212529;
+}
+#modo-maquina-duplas:hover {
+    background: linear-gradient(90deg, #e0a800, #e6700d);
+}
+
 /* ===== TELA DO JOGO CONTRA A MÁQUINA ===== */
 .area-adversario, .area-jogador {
     background: rgba(0,0,0,0.2);
@@ -121,4 +310,10 @@
 #botao-sair {
     background: linear-gradient(90deg, #dc3545, #c82333);
     color: white;
+}
+
+/* ===== RESPONSIVIDADE ===== */
+@media(max-width: 600px) {
+    header h1 { font-size: 1.8rem; }
+    .botoes-formato { flex-direction: column; }
 }
