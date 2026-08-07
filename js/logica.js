@@ -87,6 +87,7 @@ botaoModoMaquina1x1.addEventListener('click', function() {
     telaModo.style.display = 'none';
     telaMaquina1x1.style.display = 'block';
     inicializarElementosTelaMaquina();
+    configurarArrastoMesa();
     iniciarNovaPartida();
 });
 
@@ -114,6 +115,43 @@ function inicializarElementosTelaMaquina() {
     botaoJogarCarta.addEventListener('click', jogarCartaSelecionada);
     botaoNovaRodada.addEventListener('click', iniciarNovaRodada);
     botaoSair.addEventListener('click', sairDoJogo);
+}
+
+// ===== SISTEMA DE ARRASTAR E SOLTAR =====
+let indiceArrastado = null;
+
+function configurarArrastoCartas() {
+    const cartas = document.querySelectorAll('#suas-cartas .carta');
+    cartas.forEach((cartaEl, indice) => {
+        cartaEl.draggable = true;
+        cartaEl.dataset.indice = indice;
+
+        cartaEl.addEventListener('dragstart', function(e) {
+            indiceArrastado = parseInt(this.dataset.indice);
+            cartaSelecionada = indiceArrastado;
+            document.querySelectorAll('#suas-cartas .carta').forEach(c => c.classList.remove('selecionada'));
+            this.classList.add('selecionada');
+            e.dataTransfer.effectAllowed = 'move';
+        });
+    });
+}
+
+function configurarArrastoMesa() {
+    const areaMesa = document.querySelector('.area-mesa');
+    if (!areaMesa) return;
+
+    areaMesa.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+    });
+
+    areaMesa.addEventListener('drop', function(e) {
+        e.preventDefault();
+        if (indiceArrastado !== null) {
+            cartaSelecionada = indiceArrastado;
+            jogarCartaSelecionada();
+        }
+    });
 }
 
 // ===== LÓGICA DO JOGO CONTRA A MÁQUINA =====
@@ -146,6 +184,7 @@ function iniciarNovaRodada() {
     cartasJogador = baralho.splice(0, 3);
     cartasJoao = baralho.splice(0, 3);
     cartaSelecionada = null;
+    indiceArrastado = null;
     cartaJogadaJogador = null;
     cartaJogadaJoao = null;
     resultadoRodadaEl.textContent = '';
@@ -168,6 +207,7 @@ function exibirCartasJogador() {
         div.addEventListener('click', () => selecionarCarta(indice));
         suasCartasEl.appendChild(div);
     });
+    setTimeout(configurarArrastoCartas, 30);
 }
 
 function exibirCartasJoao() {
@@ -230,6 +270,7 @@ function jogarCartaSelecionada() {
 
     atualizarPlacar();
     cartaSelecionada = null;
+    indiceArrastado = null;
 }
 
 function exibirCartaNaMesa(carta, elemento) {
