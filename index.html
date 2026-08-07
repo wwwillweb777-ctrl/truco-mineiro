@@ -59,9 +59,6 @@
         <section id="tela-maquina-1x1" style="display: none;">
             <h3>🤖 VOCÊ vs JOÃO</h3>
             
-            <!-- ✅ BOTÃO DE TRUCO AQUI — PERTO DE VOCÊ, EM CIMA DAS SUAS CARTAS! -->
-            <div id="area-pedidos" style="text-align:center; margin:15px 0;"></div>
-            
             <!-- ADVERSÁRIO EM CIMA -->
             <div class="area-adversario">
                 <div class="jogador-cabecalho">
@@ -72,9 +69,13 @@
                 <div id="cartas-joao" class="cartas-jogador"></div>
             </div>
 
-            <!-- CARTA JOGADA NA MESA -->
+            <!-- ✅ MESA — AQUI FICAM AS DECISÕES! BOTÕES COM CORES DIFERENTES! -->
             <div class="area-mesa">
-                <h4>🃏 MESA</h4>
+                <h4>🃏 MESA — É AQUI QUE SE DECIDE!</h4>
+                
+                <!-- ✅ BOTÕES DE TRUCO NA MESA, COM CORES DIFERENTES! -->
+                <div id="area-pedidos" style="text-align:center; margin:12px 0; display:flex; gap:8px; justify-content:center; flex-wrap:wrap;"></div>
+                
                 <div class="cartas-mesa">
                     <div id="carta-jogada-joao" class="carta-mesa"></div>
                     <div id="carta-jogada-jogador" class="carta-mesa"></div>
