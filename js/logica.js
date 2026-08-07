@@ -1,163 +1,64 @@
-// ===== TRUCO MINEIRO — PARTE 1: ORDEM FINAL CORRIGIDA =====
+// ===== TRUCO MINEIRO — ETAPA 1: CARTAS E REGRAS BÁSICAS =====
 
-let contadorJogadores = 0;
-let jogadorAtual = null;
-
-let baralho = [];
-let cartasJogador = [];
-let cartasJoao = [];
-let cartaSelecionada = null;
-let pontosJogador = 0;
-let pontosJoao = 0;
-let cartaJogadaJogador = null;
-let cartaJogadaJoao = null;
-let vitoriasRodadaJogador = 0;
-let vitoriasRodadaJoao = 0;
-let indiceArrastado = null;
-let quemJogaPrimeiro = 'jogador';
-let vezDeJogar = 'jogador';
-let podeJogar = true;
-let rodadaEmAndamento = true;
-
-// ===== VALORES OFICIAIS =====
-const ETAPAS = [
-    { nome: 'truco', valor: 4, recusa: 2 },
-    { nome: 'seis', valor: 8, recusa: 4 },
-    { nome: 'nove', valor: 12, recusa: 6 }
-];
-const LIMITE_MAO_DE_10 = 10;
-const PONTOS_PARTIDA = 12;
-
-let valorAtualRodada = 2;
-let indiceEtapa = -1;
-let aguardandoResposta = false;
-let quemPediu = null;
-
+// ===== VALORES E NAIPES =====
 const valores = ['4', '5', '6', '7', 'Q', 'J', 'K', 'A', '2', '3'];
 const naipes = ['♦', '♥', '♠', '♣'];
 
-// ===== ✅ FORÇA DAS CARTAS — ORDEM QUE VOCÊ ENSINOU! =====
+// ===== ✅ FORÇA DAS CARTAS — EXATAMENTE COMO VOCÊ ENSINOU =====
 function calcularForca(valor, naipe) {
-
-    // ⚔️ 1º — ZAP (4 de paus) → A MAIS FORTE
+    // 1º — ZAP (4 de Paus) → A MAIOR DE TODAS
     if (valor === '4' && naipe === '♣') return 14;
 
-    // 🏆 2º — 7 DE COPAS
+    // 2º — 7 DE COPAS
     if (valor === '7' && naipe === '♥') return 13;
 
-    // ⚔️ 3º — ESPADILHA (Ás de espadas)
+    // 3º — ESPADILHA (Ás de Espadas)
     if (valor === 'A' && naipe === '♠') return 12;
 
-    // 🏆 4º — 7 DE OUROS
+    // 4º — 7 DE OUROS
     if (valor === '7' && naipe === '♦') return 11;
 
-    // 🃏 DEMAIS — DO MAIS FORTE AO MAIS FRACO
-    if (valor === '3') return 10;  // ✅ 3 é mais forte que 2, Ás, Rei... e 7 comum!
+    // DEMAIS — DO MAIS FORTE AO MAIS FRACO
+    if (valor === '3') return 10;
     if (valor === '2') return 9;
-    if (valor === 'A') return 8;
-    if (valor === 'K') return 7;
-    if (valor === 'J') return 6;
-    if (valor === 'Q') return 5;
-    if (valor === '7') return 4;   // ✅ 7 comum é MAIS FRACO que 3 e 2!
+    if (valor === 'A') return 8;  // Ás comum
+    if (valor === 'K') return 7;   // Rei
+    if (valor === 'J') return 6;   // Valete
+    if (valor === 'Q') return 5;   // Dama
+    if (valor === '7') return 4;   // 7 comum
     if (valor === '6') return 3;
     if (valor === '5') return 2;
-    if (valor === '4') return 1;
+    if (valor === '4') return 1;   // 4 comum
 
     return 0;
 }
 
-const CORES = { truco: '#ffc107', seis: '#ff6b00', nove: '#e53935' };
+// ===== VARIÁVEIS PRINCIPAIS =====
+let baralho = [];
+let cartasJogador = [];
+let cartasAdversario = [];
+let pontosJogador = 0;
+let pontosAdversario = 0;
+let vitoriasRodadaJogador = 0;
+let vitoriasRodadaAdversario = 0;
+let PONTOS_PARTIDA = 12;
 
-// ===== ELEMENTOS DA TELA =====
-const campoNome = document.getElementById('campo-nome');
-const botaoMatricular = document.getElementById('botao-matricular');
-const avisoMatricula = document.getElementById('aviso-matricula');
-const telaMatricula = document.getElementById('tela-matricula');
-const telaModo = document.getElementById('tela-modo');
-const telaMaquina1x1 = document.getElementById('tela-maquina-1x1');
-const meuIdMostrar = document.getElementById('meu-id');
-
-const botaoModoPessoas = document.getElementById('modo-pessoas');
-const botaoModoMaquina1x1 = document.getElementById('modo-maquina-1x1');
-
-let nomeJogadorEl, suasCartasEl, cartasJoaoEl;
-let pontosJogadorEl, pontosJoaoEl;
-let cartaJogadaJogadorEl, cartaJogadaJoaoEl;
-let resultadoRodadaEl, areaPedidosEl;
-let botaoNovaRodada, botaoSair;
-
-// ===== MATRÍCULA E TELAS =====
-botaoMatricular.addEventListener('click', function() {
-    let nome = campoNome.value.trim();
-    if (nome.length === 0) {
-        avisoMatricula.innerHTML = '<span style="color:#ff6b6b;">⚠️ Digite seu nome!</span>';
-        return;
-    }
-    contadorJogadores++;
-    jogadorAtual = { nome, id: nome + ' #' + contadorJogadores };
-    telaMatricula.style.display = 'none';
-    telaModo.style.display = 'block';
-    meuIdMostrar.textContent = jogadorAtual.id;
-});
-
-botaoModoMaquina1x1.addEventListener('click', () => {
-    telaModo.style.display = 'none';
-    telaMaquina1x1.style.display = 'block';
-    inicializarElementos();
-    iniciarNovaPartida();
-});
-
-// ===== INICIALIZA ELEMENTOS =====
-function inicializarElementos() {
-    nomeJogadorEl = document.getElementById('nome-jogador');
-    suasCartasEl = document.getElementById('suas-cartas');
-    cartasJoaoEl = document.getElementById('cartas-joao');
-    pontosJogadorEl = document.getElementById('pontos-jogador');
-    pontosJoaoEl = document.getElementById('pontos-joao');
-    cartaJogadaJogadorEl = document.getElementById('carta-jogada-jogador');
-    cartaJogadaJoaoEl = document.getElementById('carta-jogada-joao');
-    resultadoRodadaEl = document.getElementById('resultado-rodada');
-    areaPedidosEl = document.getElementById('area-pedidos');
-    botaoNovaRodada = document.getElementById('botao-nova-rodada');
-    botaoSair = document.getElementById('botao-sair');
-
-    nomeJogadorEl.textContent = jogadorAtual.nome;
-    botaoNovaRodada.style.opacity = '0.2';
-    botaoNovaRodada.style.pointerEvents = 'none';
-    botaoNovaRodada.addEventListener('click', () => {
-        if (pontosJogador >= PONTOS_PARTIDA || pontosJoao >= PONTOS_PARTIDA) {
-            iniciarNovaPartida();
-        } else {
-            alert('⚠️ Chegue a 12 pontos primeiro!');
-        }
-    });
-    botaoSair.addEventListener('click', () => {
-        if (confirm('🚪 Sair do jogo?')) {
-            telaMaquina1x1.style.display = 'none';
-            telaMatricula.style.display = 'block';
-        }
-    });
-}
-
-// ===== NOVA PARTIDA =====
-function iniciarNovaPartida() {
-    pontosJogador = pontosJoao = 0;
-    quemJogaPrimeiro = 'jogador';
-    atualizarPlacar();
-    iniciarNovaRodada();
-}
-
-// ===== ✅ BARALHO COM FORÇA CORRIGIDA =====
+// ===== CRIA BARALHO COM FORÇA =====
 function criarBaralho() {
     baralho = [];
-    for (let v of valores)
+    for (let v of valores) {
         for (let n of naipes) {
-            let forcaCalculada = calcularForca(v, n);
-            baralho.push({ valor: v, naipe: n, forca: forcaCalculada });
+            baralho.push({ 
+                valor: v, 
+                naipe: n, 
+                forca: calcularForca(v, n) 
+            });
         }
+    }
     embaralhar();
 }
 
+// ===== EMBARALHAR =====
 function embaralhar() {
     for (let i = baralho.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -165,298 +66,157 @@ function embaralhar() {
     }
 }
 
-function atualizarPlacar() {
-    pontosJogadorEl.textContent = pontosJogador;
-    pontosJoaoEl.textContent = pontosJoao;
-}
-
-// ===== PARTE 2: CORRIGIDA — RODADA NOVA E VEZ DE JOGAR =====
-
-// ===== NOVA RODADA =====
-function iniciarNovaRodada() {
-    rodadaEmAndamento = true;
+// ===== DISTRIBUIR CARTAS =====
+function distribuirCartas() {
     criarBaralho();
     cartasJogador = baralho.splice(0, 3);
-    cartasJoao = baralho.splice(0, 3);
-    cartaSelecionada = indiceArrastado = null;
-    vitoriasRodadaJogador = vitoriasRodadaJoao = 0;
-    cartaJogadaJogador = cartaJogadaJoao = null;
-    valorAtualRodada = 2;
-    indiceEtapa = -1;
-    aguardandoResposta = false;
-    quemPediu = null;
-    vezDeJogar = quemJogaPrimeiro;
-    podeJogar = true;
-
-    cartaJogadaJogadorEl.innerHTML = '';
-    cartaJogadaJoaoEl.innerHTML = '';
-
-    let situacao = verificarMaoDeDez();
-    let quemComeca = quemJogaPrimeiro === 'jogador' ? '👉 VOCÊ JOGA PRIMEIRO!' : '👉 JOÃO JOGA PRIMEIRO!';
-    resultadoRodadaEl.textContent = `${situacao} — ${quemComeca} — vale ${valorAtualRodada}pts`;
-
-    exibirCartas();
-    exibirCartasJoao();
-    atualizarBotoesPedido();
-
-    if (vezDeJogar === 'joao') {
-        podeJogar = false;
-        setTimeout(() => joaoJoga(), 1500);
-    }
+    cartasAdversario = baralho.splice(0, 3);
+    vitoriasRodadaJogador = 0;
+    vitoriasRodadaAdversario = 0;
 }
 
-function verificarMaoDeDez() {
-    let voceTem = pontosJogador === LIMITE_MAO_DE_10;
-    let joaoTem = pontosJoao === LIMITE_MAO_DE_10;
-    if (voceTem && joaoTem) return '✋✋ MÃO DE FERRO!';
-    if (voceTem) return `✋ MÃO DE 10! Você vê primeiro!`;
-    if (joaoTem) return '✋ MÃO DE 10! João vê primeiro!';
-    return '🎯 Rodada normal';
-}
-
-// ===== BOTÕES =====
-function atualizarBotoesPedido() {
-    if (!areaPedidosEl) return;
-    let html = '';
-
-    let ehMaoDeDez = (pontosJogador === LIMITE_MAO_DE_10) || (pontosJoao === LIMITE_MAO_DE_10);
-    if (ehMaoDeDez) {
-        areaPedidosEl.innerHTML = '';
-        return;
-    }
-
-    if (aguardandoResposta && quemPediu === 'joao') {
-        let etapa = ETAPAS[indiceEtapa + 1];
-        html = `
-            <div style="display:flex; gap:10px; justify-content:center;">
-                <button onclick="aceitarPedido()" style="padding:10px 18px; background:#28a745; color:white; border:none; border-radius:8px; font-weight:bold;">✅ ACEITAR (${etapa.valor}pts)</button>
-                <button onclick="recusarPedido()" style="padding:10px 18px; background:#dc3545; color:white; border:none; border-radius:8px; font-weight:bold;">❌ CORRER (+${etapa.recusa}pts)</button>
-            </div>`;
-    } else if (!aguardandoResposta && vezDeJogar === 'jogador') {
-        if (indiceEtapa === -1) {
-            html = `<button onclick="pedirAumento('truco')" style="padding:10px 16px; background:${CORES.truco}; color:#000; border:none; border-radius:8px; font-weight:bold;">🎯 PEDIR TRUCO (4pts)</button>`;
-        } else if (indiceEtapa === 0) {
-            html = `<button onclick="pedirAumento('seis')" style="padding:10px 16px; background:${CORES.seis}; color:#fff; border:none; border-radius:8px; font-weight:bold;">🎯 PEDIR SEIS (8pts)</button>`;
-        } else if (indiceEtapa === 1) {
-            html = `<button onclick="pedirAumento('nove')" style="padding:10px 16px; background:${CORES.nove}; color:#fff; border:none; border-radius:8px; font-weight:bold;">🎯 PEDIR NOVE (12pts)</button>`;
-        }
-    }
-    areaPedidosEl.innerHTML = html;
-}
-
-// ===== VOCÊ JOGA =====
-function efetuarJogada() {
-    if (cartaSelecionada === null || !cartasJogador[cartaSelecionada]) return;
-    if (vezDeJogar !== 'jogador' || !podeJogar || aguardandoResposta) return;
-
-    podeJogar = false;
-    cartaJogadaJogador = cartasJogador.splice(cartaSelecionada, 1)[0];
-    mostrarNaMesa(cartaJogadaJogador, cartaJogadaJogadorEl);
-    resultadoRodadaEl.textContent = `🃏 Você jogou: ${cartaJogadaJogador.valor} de ${cartaJogadaJogador.naipe}`;
-    cartaSelecionada = null;
-    exibirCartas();
-
-    vezDeJogar = 'joao';
-    areaPedidosEl.innerHTML = '';
-    atualizarBotoesPedido();
-
-    setTimeout(() => joaoJoga(), 1500);
-}
-
-// ===== JOÃO JOGA — UMA CARTA SÓ! =====
-function joaoJoga() {
-    if (vezDeJogar !== 'joao') return;
-
-    let forcas = cartasJoao.map(c => c.forca);
-    let melhorForca = Math.max(...forcas);
-    let indiceMelhor = forcas.indexOf(melhorForca);
-
-    cartaJogadaJoao = cartasJoao.splice(indiceMelhor, 1)[0];
-    mostrarNaMesa(cartaJogadaJoao, cartaJogadaJoaoEl);
-    resultadoRodadaEl.textContent = `🃏 João jogou: ${cartaJogadaJoao.valor} de ${cartaJogadaJoao.naipe}`;
-
-    setTimeout(() => verificarVencedor(), 1200);
-}
-
-// ===== ✅ CORRIGIDO: EMPATE, TERCEIRA JOGADA E VEZ DE JOGAR =====
-function verificarVencedor() {
-    let vencedor = null;
-    let quemJogouUltimo = vezDeJogar;
-
-    if (cartaJogadaJogador.forca > cartaJogadaJoao.forca) {
+// ===== ✅ COMPARAR CARTAS E DEFINIR VENCEDOR DA JOGADA =====
+function compararCartas(cartaJogador, cartaAdversario) {
+    if (cartaJogador.forca > cartaAdversario.forca) {
         vitoriasRodadaJogador++;
-        resultadoRodadaEl.textContent = `✅ VOCÊ VENCEU A JOGADA! (${vitoriasRodadaJogador} x ${vitoriasRodadaJoao})`;
-        vencedor = 'jogador';
-    } else if (cartaJogadaJogador.forca < cartaJogadaJoao.forca) {
-        vitoriasRodadaJoao++;
-        resultadoRodadaEl.textContent = `❌ JOÃO VENCEU A JOGADA! (${vitoriasRodadaJogador} x ${vitoriasRodadaJoao})`;
-        vencedor = 'joao';
+        return "Jogador venceu esta jogada!";
+    } else if (cartaJogador.forca < cartaAdversario.forca) {
+        vitoriasRodadaAdversario++;
+        return "Adversário venceu esta jogada!";
     } else {
-        // ✅ EMPATE: Quem jogou por último joga de novo
-        resultadoRodadaEl.textContent = `🤝 EMPATE! Quem jogou a última joga de novo!`;
-        vencedor = quemJogouUltimo;
-    }
-
-    setTimeout(() => {
-        cartaJogadaJogadorEl.innerHTML = '';
-        cartaJogadaJoaoEl.innerHTML = '';
-
-        // ✅ SE ALGUÉM CHEGOU A 2 → ENCERRA RODADA E DISTRIBUI CARTAS NOVAS!
-        if (vitoriasRodadaJogador === 2 || vitoriasRodadaJoao === 2) {
-            encerrarRodada();
-            return;
-        }
-
-        // ✅ SÓ CONTINUA SE AINDA NÃO CHEGOU A 2
-        vezDeJogar = vencedor;
-        podeJogar = true;
-
-        exibirCartas();
-        exibirCartasJoao();
-        atualizarBotoesPedido();
-
-        // ✅ QUEM VENCEU JOGA A PRÓXIMA — MAS SÓ UMA VEZ! NÃO JOGA MAIS DE UMA!
-        if (vencedor === 'joao') {
-            podeJogar = false;
-            setTimeout(() => joaoJoga(), 1500);
-        }
-        // ✅ SE VOCÊ VENCEU → FICA LIBERADO PARA VOCÊ JOGAR!
-    }, 1800);
-}
-
-// ===== ✅ ENCERRA RODADA E INICIA NOVA COM CARTAS NOVAS! =====
-function encerrarRodada() {
-    rodadaEmAndamento = false;
-    aguardandoResposta = false;
-
-    if (vitoriasRodadaJogador > vitoriasRodadaJoao) {
-        pontosJogador += valorAtualRodada;
-        resultadoRodadaEl.textContent = `🏆 VOCÊ VENCEU A RODADA! +${valorAtualRodada}pts`;
-        quemJogaPrimeiro = 'jogador';
-    } else {
-        pontosJoao += valorAtualRodada;
-        resultadoRodadaEl.textContent = `😔 JOÃO VENCEU A RODADA! +${valorAtualRodada}pts`;
-        quemJogaPrimeiro = 'joao';
-    }
-
-    atualizarPlacar();
-    atualizarBotoesPedido();
-
-    if (pontosJogador >= PONTOS_PARTIDA || pontosJoao >= PONTOS_PARTIDA) {
-        setTimeout(() => {
-            let ganhou = pontosJogador >= PONTOS_PARTIDA;
-            alert(`${ganhou ? '🎉 PARABÉNS! VOCÊ VENCEU!' : '😔 JOÃO VENCEU A PARTIDA!'}\nPlacar: ${pontosJogador} x ${pontosJoao}`);
-            botaoNovaRodada.style.opacity = '1';
-            botaoNovaRodada.style.pointerEvents = 'auto';
-        }, 600);
-    } else {
-        // ✅ RODADA NOVA DISTRIBUI CARTAS NOVAS!
-        setTimeout(() => {
-            resultadoRodadaEl.textContent = '🃏 Preparando nova rodada...';
-            iniciarNovaRodada(); // ← ISSO CRIA BARALHO NOVO E DISTRIBUI CARTAS NOVAS!
-        }, 2500);
+        return "EMPATE! Quem jogou por último joga primeiro na próxima!";
     }
 }
 
-// ===== EXIBIR CARTAS =====
-function exibirCartas() {
-    suasCartasEl.innerHTML = '';
-    cartasJogador.forEach((carta, i) => {
-        if (!carta) return;
-        const div = document.createElement('div');
-        div.className = 'carta';
-        div.style.cursor = (vezDeJogar === 'jogador' && podeJogar && !aguardandoResposta) ? 'pointer' : 'not-allowed';
-        div.innerHTML = `<span>${carta.valor}</span><span class="naipe">${carta.naipe}</span>`;
-        div.addEventListener('click', () => {
-            if (vezDeJogar !== 'jogador' || !podeJogar || aguardandoResposta) return;
-            cartaSelecionada = i;
-            document.querySelectorAll('#suas-cartas .carta').forEach((el, idx) => {
-                el.style.transform = idx === i ? 'translateY(-10px)' : '';
-                el.style.boxShadow = idx === i ? '0 0 15px #ffd700' : '';
-            });
-            setTimeout(() => efetuarJogada(), 150);
-        });
-        suasCartasEl.appendChild(div);
-    });
+// ===== ✅ VERIFICA QUEM GANHOU A RODADA (PRECISA DE 2 VITÓRIAS) =====
+function verificarVencedorRodada() {
+    if (vitoriasRodadaJogador === 2) {
+        pontosJogador += 2;
+        return "🏆 JOGADOR VENCEU A RODADA!";
+    }
+    if (vitoriasRodadaAdversario === 2) {
+        pontosAdversario += 2;
+        return "😔 ADVERSÁRIO VENCEU A RODADA!";
+    }
+    return null; // Ainda não chegou a 2 → continua jogando
 }
+// ===== TRUCO MINEIRO — ETAPA 2: TRUCO, SEIS, NOVE E FLUXO COMPLETO =====
 
-function exibirCartasJoao() {
-    cartasJoaoEl.innerHTML = '';
-    cartasJoao.forEach(carta => {
-        if (!carta) return;
-        const div = document.createElement('div');
-        div.className = 'carta';
-        div.style.background = 'linear-gradient(135deg, #4b2e83, #2a194e)';
-        div.style.color = 'white';
-        div.innerHTML = '<span>?</span><span class="naipe">🃏</span>';
-        cartasJoaoEl.appendChild(div);
-    });
-}
+// ===== VALORES DO TRUCO =====
+const ETAPAS = [
+    { nome: 'truco', valor: 4, recusa: 2 },
+    { nome: 'seis', valor: 8, recusa: 4 },
+    { nome: 'nove', valor: 12, recusa: 6 }
+];
+const PONTOS_PARTIDA = 12;
+const LIMITE_MAO_DE_10 = 10;
 
-function mostrarNaMesa(carta, el) {
-    el.innerHTML = `<span style="font-size:1.3rem; font-weight:bold;">${carta.valor}</span><span style="font-size:1.5rem;">${carta.naipe}</span>`;
-}
+// ===== VARIÁVEIS DO JOGO =====
+let valorAtualRodada = 2;
+let indiceEtapa = -1;
+let aguardandoResposta = false;
+let quemPediu = null;
+let quemJogaPrimeiro = 'jogador';
+let vezDeJogar = 'jogador';
+let podeJogar = true;
+let rodadaEmAndamento = true;
 
-// ===== TRUCO =====
-window.pedirAumento = function(tipo) {
+// ===== ✅ PEDIR AUMENTO =====
+function pedirAumento(tipo) {
     if (aguardandoResposta) return;
+    
     let indicePedido = ETAPAS.findIndex(e => e.nome === tipo);
     let etapa = ETAPAS[indicePedido];
-
+    
     aguardandoResposta = true;
     quemPediu = 'jogador';
-    resultadoRodadaEl.textContent = `🔴 VOCÊ PEDE ${tipo.toUpperCase()}! João decide...`;
-
+    
+    // Aqui o adversário decide: aceita ou corre
     setTimeout(() => {
-        let forcas = cartasJoao.map(c => c.forca);
-        let melhor = Math.max(...forcas);
-        let chance = melhor >= 8 ? 0.85 : melhor >= 5 ? 0.55 : 0.20;
-        let aceita = Math.random() < chance;
-
+        // Lógica simples de decisão do adversário
+        let chanceAceitar = 0.5; // 50% de chance
+        let aceita = Math.random() < chanceAceitar;
+        
         if (aceita) {
             indiceEtapa = indicePedido;
             valorAtualRodada = etapa.valor;
-            resultadoRodadaEl.textContent = `✅ JOÃO ACEITOU! Agora vale ${etapa.valor}pts!`;
-            encerraAumento();
+            console.log(`✅ Aceitou! Agora vale ${etapa.valor} pontos!`);
         } else {
+            // Adversário correu → você ganha os pontos de recusa
             pontosJogador += etapa.recusa;
-            resultadoRodadaEl.textContent = `🏃 JOÃO CORREU! VOCÊ GANHA ${etapa.recusa}pts!`;
-            encerraAumento();
+            console.log(`🏃 Adversário correu! Você ganha ${etapa.recusa} pontos!`);
+            encerrarRodada();
         }
-        atualizarPlacar();
-        atualizarBotoesPedido();
+        aguardandoResposta = false;
+        quemPediu = null;
     }, 1500);
-};
+}
 
-window.aceitarPedido = function() {
-    let etapa = ETAPAS[indiceEtapa + 1];
+// ===== ✅ ACEITAR PEDIDO DO ADVERSÁRIO =====
+function aceitarPedido() {
     indiceEtapa++;
-    valorAtualRodada = etapa.valor;
-    resultadoRodadaEl.textContent = `✅ VOCÊ ACEITOU! ${etapa.valor}pts!`;
-    encerraAumento();
-    atualizarPlacar();
-    atualizarBotoesPedido();
-};
-
-window.recusarPedido = function() {
-    let etapa = ETAPAS[indiceEtapa + 1];
-    pontosJoao += etapa.recusa;
-    resultadoRodadaEl.textContent = `🏃 VOCÊ CORREU! JOÃO GANHA ${etapa.recusa}pts!`;
-    encerraAumento();
-    atualizarPlacar();
-    atualizarBotoesPedido();
-};
-
-function encerraAumento() {
+    valorAtualRodada = ETAPAS[indiceEtapa].valor;
+    console.log(`✅ Você aceitou! Vale ${valorAtualRodada} pontos!`);
     aguardandoResposta = false;
     quemPediu = null;
-    if (vitoriasRodadaJogador === 2 || vitoriasRodadaJoao === 2) {
-        encerrarRodada();
+}
+
+// ===== ✅ RECUSAR / CORRER DO PEDIDO =====
+function recusarPedido() {
+    pontosAdversario += ETAPAS[indiceEtapa + 1].recusa;
+    console.log(`🏃 Você correu! Adversário ganha ${ETAPAS[indiceEtapa + 1].recusa} pontos!`);
+    aguardandoResposta = false;
+    quemPediu = null;
+    encerrarRodada();
+}
+
+// ===== ✅ ENCERRAR RODADA E SOMAR PONTOS =====
+function encerrarRodada() {
+    rodadaEmAndamento = false;
+    
+    if (vitoriasRodadaJogador > vitoriasRodadaAdversario) {
+        pontosJogador += valorAtualRodada;
+        console.log(`🏆 VOCÊ VENCEU! +${valorAtualRodada} pontos`);
+        quemJogaPrimeiro = 'jogador';
+    } else {
+        pontosAdversario += valorAtualRodada;
+        console.log(`😔 ADVERSÁRIO VENCEU! +${valorAtualRodada} pontos`);
+        quemJogaPrimeiro = 'adversário';
+    }
+    
+    // Verifica se alguém chegou aos 12 pontos
+    if (pontosJogador >= PONTOS_PARTIDA) {
+        console.log("🎉 PARABÉNS! VOCÊ VENCEU A PARTIDA!");
         return;
     }
-    if (rodadaEmAndamento) {
-        vezDeJogar = quemJogaPrimeiro;
-        podeJogar = true;
-        if (vezDeJogar === 'joao') setTimeout(() => joaoJoga(), 1500);
+    if (pontosAdversario >= PONTOS_PARTIDA) {
+        console.log("😔 ADVERSÁRIO VENCEU A PARTIDA!");
+        return;
     }
+    
+    // Inicia nova rodada
+    setTimeout(() => {
+        valorAtualRodada = 2;
+        indiceEtapa = -1;
+        rodadaEmAndamento = true;
+        vitoriasRodadaJogador = 0;
+        vitoriasRodadaAdversario = 0;
+        distribuirCartas();
+        vezDeJogar = quemJogaPrimeiro;
+        console.log("🃏 NOVA RODADA INICIADA!");
+    }, 2000);
+}
+
+// ===== VERIFICA MÃO DE 10 =====
+function verificarMaoDeDez() {
+    if (pontosJogador === LIMITE_MAO_DE_10 && pontosAdversario === LIMITE_MAO_DE_10) {
+        return "✋✋ MÃO DE FERRO! Ninguém vê primeiro!";
+    }
+    if (pontosJogador === LIMITE_MAO_DE_10) {
+        return "✋ MÃO DE DEZ! Você vê primeiro!";
+    }
+    if (pontosAdversario === LIMITE_MAO_DE_10) {
+        return "✋ MÃO DE DEZ! Adversário vê primeiro!";
+    }
+    return null;
 }
