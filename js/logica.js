@@ -1,4 +1,4 @@
-// ===== TRUCO MINEIRO — REGRAS COMPLETAS =====
+// ===== TRUCO MINEIRO — PONTOS CERTOS + QUEM VENCE JOGA PRIMEIRO =====
 
 let contadorJogadores = 0;
 let jogadorAtual = null;
@@ -17,6 +17,7 @@ let vitoriasRodadaJogador = 0;
 let vitoriasRodadaJoao = 0;
 let indiceArrastado = null;
 let rodadaEmAndamento = false;
+let quemJogaPrimeiro = 'jogador'; // ✅ CONTROLA QUEM JOGA PRIMEIRO
 
 // ===== VALORES OFICIAIS DO TRUCO MINEIRO =====
 const VALORES_PEDIDO = {
@@ -134,6 +135,7 @@ function configurarMesa() {
 // ===== INÍCIO DA PARTIDA =====
 function iniciarNovaPartida() {
     pontosJogador = pontosJoao = 0;
+    quemJogaPrimeiro = 'jogador'; // ✅ VOCÊ COMEÇA A PRIMEIRA
     atualizarPlacar();
     iniciarNovaRodada();
 }
@@ -181,7 +183,8 @@ function iniciarNovaRodada() {
     botaoNovaRodada.style.pointerEvents = 'none';
 
     let situacao = verificarMaoDeDez();
-    resultadoRodadaEl.textContent = situacao + ` — Rodada vale ${valorAtualRodada} pontos`;
+    let quemComeca = quemJogaPrimeiro === 'jogador' ? 'Você joga primeiro!' : 'João joga primeiro!';
+    resultadoRodadaEl.textContent = situacao + ` — ${quemComeca} — vale ${valorAtualRodada} pontos`;
 
     cartaJogadaJogadorEl.innerHTML = '';
     cartaJogadaJoaoEl.innerHTML = '';
@@ -203,7 +206,7 @@ function verificarMaoDeDez() {
     } else if (joaoTemDez) {
         return '✋ MÃO DE 10! João vê primeiro — NÃO TROCA CARTAS!';
     }
-    return '🎯 Rodada normal — vale 2 pontos';
+    return '🎯 Rodada normal';
 }
 
 // ===== SISTEMA DE PEDIDOS: TRUCO → SEIS → NOVE → DOZE =====
@@ -233,17 +236,17 @@ window.pedirAumento = function(tipo) {
         valorAtualRodada = valorPedir;
         resultadoRodadaEl.textContent = `✅ ACEITOU! Rodada agora vale ${valorAtualRodada} pontos!`;
         
-        // LIBERA PRÓXIMO PEDIDO
         if (tipo === 'truco') proximoPedidoDisponivel = 'seis';
         else if (tipo === 'seis') proximoPedidoDisponivel = 'nove';
         else if (tipo === 'nove') proximoPedidoDisponivel = 'doze';
         else if (tipo === 'doze') proximoPedidoDisponivel = null;
     } else {
-        // RECUSOU — QUEM PEDIU GANHA
+        // ✅ RECUSOU → GANHA O VALOR DA RECUSA (2, 4, 6 ou 9)
         pontosJogador += valorRecusa;
         resultadoRodadaEl.textContent = `❌ RECUSOU! Você ganha ${valorRecusa} pontos!`;
         rodadaEmAndamento = false;
         proximoPedidoDisponivel = null;
+        quemJogaPrimeiro = 'jogador'; // ✅ QUEM PEDIU E RECUSOU JOGA PRÓXIMA
         verificarFimDePartida();
     }
     
@@ -323,10 +326,10 @@ function efetuarJogada() {
     // VERIFICA QUEM VENCEU A JOGADA
     if (cartaJogadaJogador.forca > cartaJogadaJoao.forca) {
         vitoriasRodadaJogador++;
-        resultadoRodadaEl.textContent = `✅ VOCÊ VENCEU A JOGADA! (${vitoriasRodadaJogador}x${vitoriasRodadaJoao}) — vale ${valorAtualRodada}pts`;
+        resultadoRodadaEl.textContent = `✅ VOCÊ VENCEU A JOGADA! (${vitoriasRodadaJogador}x${vitoriasRodadaJoao})`;
     } else if (cartaJogadaJogador.forca < cartaJogadaJoao.forca) {
         vitoriasRodadaJoao++;
-        resultadoRodadaEl.textContent = `❌ JOÃO VENCEU A JOGADA! (${vitoriasRodadaJogador}x${vitoriasRodadaJoao}) — vale ${valorAtualRodada}pts`;
+        resultadoRodadaEl.textContent = `❌ JOÃO VENCEU A JOGADA! (${vitoriasRodadaJogador}x${vitoriasRodadaJoao})`;
     } else {
         resultadoRodadaEl.textContent = '🤝 EMPATE NA JOGADA!';
     }
@@ -341,19 +344,24 @@ function efetuarJogada() {
     cartaSelecionada = indiceArrastado = null;
 }
 
-// ===== ENCERRA RODADA — SOMA PONTOS E LIBERA BOTÃO =====
+// ===== ENCERRA RODADA — SOMA PONTOS CERTOS E DEFINE QUEM JOGA PRÓXIMA =====
 function encerrarRodada() {
     rodadaEmAndamento = false;
     proximoPedidoDisponivel = null;
 
     if (vitoriasRodadaJogador > vitoriasRodadaJoao) {
+        // ✅ VOCÊ VENCEU → SOMA VALOR CERTO E VOCÊ JOGA PRÓXIMA
         resultadoRodadaEl.textContent = `🏆 VOCÊ VENCEU A RODADA! +${valorAtualRodada} PONTOS`;
         pontosJogador += valorAtualRodada;
+        quemJogaPrimeiro = 'jogador'; // ✅ QUEM VENCEU JOGA PRÓXIMA!
     } else if (vitoriasRodadaJoao > vitoriasRodadaJogador) {
+        // ✅ JOÃO VENCEU → SOMA VALOR CERTO E ELE JOGA PRÓXIMA
         resultadoRodadaEl.textContent = `😔 JOÃO VENCEU A RODADA! +${valorAtualRodada} PONTOS`;
-        pontosJoao += valorAtualRodada;
+        pontosJoao += valorAtualRodada; // ✅ SOMA O VALOR EXATO (2, 4, 6...)
+        quemJogaPrimeiro = 'joao'; // ✅ QUEM VENCEU JOGA PRÓXIMA!
     } else {
         resultadoRodadaEl.textContent = '🤝 EMPATE! Ninguém pontuou.';
+        // ✅ EMPATE → QUEM COMEÇOU ANTES JOGA NOVAMENTE
     }
 
     // LIBERA BOTÃO DE NOVA RODADA
