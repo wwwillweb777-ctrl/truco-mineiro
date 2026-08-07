@@ -1,4 +1,4 @@
-// ===== TRUCO MINEIRO — PARTE 1: INÍCIO E CONFIGURAÇÃO =====
+// ===== TRUCO MINEIRO — PARTE 1: COM LISTA DE FORÇAS =====
 
 let contadorJogadores = 0;
 let jogadorAtual = null;
@@ -36,18 +36,33 @@ let quemPediu = null;
 const valores = ['4', '5', '6', '7', 'Q', 'J', 'K', 'A', '2', '3'];
 const naipes = ['♦', '♥', '♠', '♣'];
 
-// ===== ✅ FORÇA DAS CARTAS — RECONHECE AS 4 CARTAS ESPECIAIS! =====
-function calcularForca(valor, naipe) {
-    // ⚔️ ZAP = 4 de paus → A MAIS FORTE DE TODAS!
-    if (valor === '4' && naipe === '♣') return 14;
-    // ⚔️ ESPADILHA = Ás de espadas → SEGUNDA MAIS FORTE!
-    if (valor === 'A' && naipe === '♠') return 13;
-    // 🏆 7 DE COPAS → TERCEIRA MAIS FORTE!
-    if (valor === '7' && naipe === '♥') return 12;
-    // 🏆 7 DE OUROS → QUARTA MAIS FORTE!
-    if (valor === '7' && naipe === '♦') return 11;
+// ===== 🃏 TABELA DE FORÇAS — ORDEM OFICIAL DO TRUCO MINEIRO =====
+const TABELA_FORCAS = [
+    { nome: '⚔️ ZAP (4 de paus)', valor: '4', naipe: '♣', forca: 14, mata: 'TODAS as cartas!' },
+    { nome: '⚔️ ESPADILHA (Ás de espadas)', valor: 'A', naipe: '♠', forca: 13, mata: 'Todas, menos o Zap!' },
+    { nome: '🏆 7 DE COPAS', valor: '7', naipe: '♥', forca: 12, mata: 'Todas, menos Zap e Espadilha!' },
+    { nome: '🏆 7 DE OUROS', valor: '7', naipe: '♦', forca: 11, mata: 'Todas as comuns!' },
+    { nome: '3', valor: '3', naipe: null, forca: 10, mata: '2, Ás, Rei, Valete, Dama, 7 comum e abaixo!' },
+    { nome: '2', valor: '2', naipe: null, forca: 9, mata: 'Ás, Rei, Valete, Dama, 7 comum e abaixo!' },
+    { nome: 'Ás comum', valor: 'A', naipe: null, forca: 8, mata: 'Rei, Valete, Dama, 7 comum e abaixo!' },
+    { nome: 'Rei (K)', valor: 'K', naipe: null, forca: 7, mata: 'Valete, Dama, 7 comum e abaixo!' },
+    { nome: 'Valete (J)', valor: 'J', naipe: null, forca: 6, mata: 'Dama, 7 comum e abaixo!' },
+    { nome: 'Dama (Q)', valor: 'Q', naipe: null, forca: 5, mata: '7 comum, 6, 5 e 4 comum!' },
+    { nome: '7 comum', valor: '7', naipe: null, forca: 4, mata: '6, 5 e 4 comum!' },
+    { nome: '6', valor: '6', naipe: null, forca: 3, mata: '5 e 4 comum!' },
+    { nome: '5', valor: '5', naipe: null, forca: 2, mata: '4 comum!' },
+    { nome: '4 comum', valor: '4', naipe: null, forca: 1, mata: 'Nenhuma!' }
+];
 
-    // 🃏 DEMAIS CARTAS — ORDEM NORMAL
+// ===== ✅ CALCULA FORÇA — JOÃO AGORA SABE TUDO! =====
+function calcularForca(valor, naipe) {
+    // Cartas ESPECIAIS — o naipe FAZ diferença!
+    if (valor === '4' && naipe === '♣') return 14; // ZAP
+    if (valor === 'A' && naipe === '♠') return 13;  // ESPADILHA
+    if (valor === '7' && naipe === '♥') return 12;  // 7 DE COPAS
+    if (valor === '7' && naipe === '♦') return 11;  // 7 DE OUROS
+
+    // Cartas NORMAIS — o naipe NÃO faz diferença!
     const ordemNormal = { '3': 10, '2': 9, 'A': 8, 'K': 7, 'J': 6, 'Q': 5, '7': 4, '6': 3, '5': 2, '4': 1 };
     return ordemNormal[valor] || 0;
 }
@@ -133,12 +148,14 @@ function iniciarNovaPartida() {
     iniciarNovaRodada();
 }
 
-// ===== ✅ CARTAS E BARALHO — CORRIGIDO! =====
+// ===== ✅ BARALHO COM FORÇA CORRIGIDA =====
 function criarBaralho() {
     baralho = [];
     for (let v of valores)
-        for (let n of naipes)
-            baralho.push({ valor: v, naipe: n, forca: calcularForca(v, n) });
+        for (let n of naipes) {
+            let forcaCalculada = calcularForca(v, n);
+            baralho.push({ valor: v, naipe: n, forca: forcaCalculada });
+        }
     embaralhar();
 }
 
@@ -153,6 +170,7 @@ function atualizarPlacar() {
     pontosJogadorEl.textContent = pontosJogador;
     pontosJoaoEl.textContent = pontosJoao;
 }
+
 
 
 // ===== PARTE 2: RODADA, JOGADAS E JOÃO — CORRIGIDO =====
