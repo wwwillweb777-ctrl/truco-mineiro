@@ -170,7 +170,7 @@ function atualizarPlacar() {
     pontosJoaoEl.textContent = pontosJoao;
 }
 
-// ===== PARTE 2: RODADA, JOGADAS E JOÃO — CORRIGIDA DEFINITIVAMENTE =====
+// ===== PARTE 2: REGRAS CORRIGIDAS — EMPATE E NÃO JOGA TERCEIRA DESNECESSÁRIA =====
 
 // ===== NOVA RODADA =====
 function iniciarNovaRodada() {
@@ -263,7 +263,7 @@ function efetuarJogada() {
     setTimeout(() => joaoJoga(), 1500);
 }
 
-// ===== JOÃO JOGA — UMA CARTA SÓ! =====
+// ===== JOÃO JOGA =====
 function joaoJoga() {
     if (vezDeJogar !== 'joao') return;
 
@@ -278,9 +278,10 @@ function joaoJoga() {
     setTimeout(() => verificarVencedor(), 1200);
 }
 
-// ===== ✅ CORRIGIDO: JOÃO JOGA UMA VEZ E PARA! =====
+// ===== ✅ REGRAS CORRIGIDAS: EMPATE E NÃO JOGA TERCEIRA DESNECESSÁRIA =====
 function verificarVencedor() {
     let vencedor = null;
+    let quemJogouUltimo = vezDeJogar; // ✅ Quem jogou a última carta
 
     if (cartaJogadaJogador.forca > cartaJogadaJoao.forca) {
         vitoriasRodadaJogador++;
@@ -291,20 +292,22 @@ function verificarVencedor() {
         resultadoRodadaEl.textContent = `❌ JOÃO VENCEU A JOGADA! (${vitoriasRodadaJogador} x ${vitoriasRodadaJoao})`;
         vencedor = 'joao';
     } else {
-        resultadoRodadaEl.textContent = '🤝 EMPATE! Quem começou joga a próxima!';
-        vencedor = quemJogaPrimeiro;
+        // ✅ REGRA DO EMPATE: Quem JOGOU A ÚLTIMA é quem joga de novo!
+        resultadoRodadaEl.textContent = `🤝 EMPATE! Quem jogou a última joga de novo!`;
+        vencedor = quemJogouUltimo; // João jogou por último → João joga de novo
     }
 
     setTimeout(() => {
         cartaJogadaJogadorEl.innerHTML = '';
         cartaJogadaJoaoEl.innerHTML = '';
 
+        // ✅ REGRA: QUEM FIZER 2 PONTOS → RODADA ACABA! NÃO JOGA A TERCEIRA!
         if (vitoriasRodadaJogador === 2 || vitoriasRodadaJoao === 2) {
             encerrarRodada();
-            return;
+            return; // ⛔ PARA AQUI! NÃO JOGA MAIS NADA!
         }
 
-        // ✅ QUEM VENCEU JOGA A PRÓXIMA JOGADA — MAS SÓ UMA! DEPOIS PASSA A VEZ!
+        // ✅ SÓ CONTINUA SE ESTIVER 0x0 OU 1x1
         vezDeJogar = vencedor;
         podeJogar = true;
 
@@ -312,12 +315,10 @@ function verificarVencedor() {
         exibirCartasJoao();
         atualizarBotoesPedido();
 
-        // ✅ SE JOÃO VENCEU → ELE JOGA A PRÓXIMA UMA VEZ SÓ! DEPOIS É A SUA VEZ!
         if (vencedor === 'joao') {
             podeJogar = false;
             setTimeout(() => joaoJoga(), 1500);
         }
-        // ✅ SE VOCÊ VENCEU → JÁ FICA LIBERADO PARA VOCÊ JOGAR!
     }, 1800);
 }
 
