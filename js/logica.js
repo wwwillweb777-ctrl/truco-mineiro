@@ -38,7 +38,7 @@ let quemJogaPrimeiro = 'jogador';
 let vezDeJogar = 'jogador';
 let podeJogar = true;
 let temporizadorEspera = null;
-const TEMPO_ESPERA = 180000; // ⏱️ 3 MINUTOS em milissegundos
+const TEMPO_ESPERA = 180000; // ⏱️ 3 MINUTOS
 const PONTOS_PARTIDA = 12;
 
 // ===== ELEMENTOS =====
@@ -111,52 +111,48 @@ function distribuirCartas() {
     vitoriasRodadaJoao = 0;
 }
 
-// ===== ⏱️ INICIAR CONTAGEM DE ESPERA =====
+// ===== ⏱️ CONTAGEM DE ESPERA =====
 function iniciarContagemEspera() {
     limparContagemEspera();
     temporizadorEspera = setTimeout(() => {
-        // ✅ PASSOU 3 MINUTOS → JOGA UMA CARTA ALEATÓRIA POR VOCÊ
-        document.getElementById('resultado-rodada').textContent = '⏱️ Tempo esgotado! Jogando carta aleatória por você...';
+        document.getElementById('resultado-rodada').textContent = '⏱️ Tempo esgotado! Jogando carta aleatória...';
         setTimeout(() => jogarCartaAleatoria(), 1500);
     }, TEMPO_ESPERA);
 }
-
-// ===== ⏱️ PARAR CONTAGEM =====
 function limparContagemEspera() {
     if (temporizadorEspera) {
         clearTimeout(temporizadorEspera);
         temporizadorEspera = null;
     }
 }
-
-// ===== 🎲 JOGA CARTA ALEATÓRIA =====
 function jogarCartaAleatoria() {
-    // ✅ ESCOLHE QUALQUER CARTA ALEATORIAMENTE
     const indiceAleatorio = Math.floor(Math.random() * cartasJogador.length);
     cartaSelecionada = indiceAleatorio;
     jogarCarta();
 }
 
+// ===== ✅ LIMPAR MESA COMPLETAMENTE =====
+function limparMesa() {
+    document.getElementById('carta-jogada-jogador').innerHTML = '';
+    document.getElementById('carta-jogada-joao').innerHTML = '';
+}
+
 // ===== ✅ NOVA RODADA =====
 function iniciarNovaRodada() {
     limparContagemEspera();
-    
     cartaSelecionada = null;
     cartaJogadaJogador = null;
     cartaJogadaJoao = null;
 
     distribuirCartas();
-
     vezDeJogar = quemJogaPrimeiro;
     podeJogar = (vezDeJogar === 'jogador');
 
-    // ✅ LIMPA A MESA
-    document.getElementById('carta-jogada-jogador').innerHTML = '';
-    document.getElementById('carta-jogada-joao').innerHTML = '';
+    limparMesa(); // ✅ MESA LIMPA NO INÍCIO DA RODADA
 
     if (vezDeJogar === 'jogador') {
-        document.getElementById('resultado-rodada').textContent = '👉 SUA VEZ! João vai esperar você! (3 min)';
-        iniciarContagemEspera(); // ⏱️ INICIA A CONTAGEM
+        document.getElementById('resultado-rodada').textContent = '👉 SUA VEZ! Clique na carta!';
+        iniciarContagemEspera();
     } else {
         document.getElementById('resultado-rodada').textContent = '⏳ João joga primeiro...';
     }
@@ -184,7 +180,7 @@ function exibirCartasJogador() {
                 document.getElementById('resultado-rodada').textContent = '⏳ Espere sua vez!';
                 return;
             }
-            limparContagemEspera(); // ✅ VOCÊ JOGOU → PARA O TEMPO
+            limparContagemEspera();
             document.querySelectorAll('#suas-cartas .carta').forEach(el => el.classList.remove('selecionada'));
             div.classList.add('selecionada');
             cartaSelecionada = indice;
@@ -207,14 +203,11 @@ function exibirCartasJoao() {
     });
 }
 
-// ===== ✅ VOCÊ JOGA =====
+// ===== ✅ VOCÊ JOGA → MESA LIMPA ANTES =====
 function jogarCarta() {
-    limparContagemEspera(); // ✅ PARA O TEMPO
+    limparContagemEspera();
     podeJogar = false;
-
-    // ✅ LIMPA A MESA
-    document.getElementById('carta-jogada-jogador').innerHTML = '';
-    document.getElementById('carta-jogada-joao').innerHTML = '';
+    limparMesa(); // ✅ MESA LIMPA ANTES DE APARECER SUA CARTA
 
     cartaJogadaJogador = cartasJogador.splice(cartaSelecionada, 1)[0];
     document.getElementById('carta-jogada-jogador').innerHTML = 
@@ -222,16 +215,13 @@ function jogarCarta() {
     document.getElementById('resultado-rodada').textContent = 
         `🃏 Você jogou ${cartaJogadaJogador.valor} de ${cartaJogadaJogador.naipe}`;
 
-    // ✅ JOÃO SÓ JOGA DEPOIS DE VOCÊ
     setTimeout(() => joaoJoga(), 1500);
 }
 
-// ===== ✅ JOÃO JOGA =====
+// ===== ✅ JOÃO JOGA → MESA JÁ ESTAVA LIMPA =====
 function joaoJoga() {
     let indiceEscolhido = -1;
-
     if (cartaJogadaJogador) {
-        // ✅ TENTA MATAR SUA CARTA
         let menorQueGanha = null;
         for (let i = 0; i < cartasJoao.length; i++) {
             if (cartasJoao[i].forca > cartaJogadaJogador.forca) {
@@ -241,7 +231,6 @@ function joaoJoga() {
                 }
             }
         }
-        // ✅ SE NÃO CONSEGUE, JOGA A MAIS FRACA
         if (indiceEscolhido === -1) {
             let menorForca = Math.min(...cartasJoao.map(c => c.forca));
             indiceEscolhido = cartasJoao.findIndex(c => c.forca === menorForca);
@@ -260,7 +249,7 @@ function joaoJoga() {
     setTimeout(() => verificarVencedor(), 1200);
 }
 
-// ===== ✅ VERIFICAR VENCEDOR =====
+// ===== ✅ VERIFICAR VENCEDOR → MESA LIMPA PARA PRÓXIMA =====
 function verificarVencedor() {
     let vencedor;
 
@@ -275,18 +264,18 @@ function verificarVencedor() {
         document.getElementById('resultado-rodada').textContent = 
             `❌ JOÃO VENCEU! (${vitoriasRodadaJogador} x ${vitoriasRodadaJoao})`;
     } else {
-        // ✅ EMPATE = CANGOU
+        // ✅ EMPATE = CANGOU → NÃO CONTA PONTO
         vencedor = vezDeJogar;
         document.getElementById('resultado-rodada').textContent = 
-            '🤝 EMPATE! CANGOU! Quem jogou por último vence!';
+            '🤝 EMPATE! CANGOU! NÃO CONTA PONTO! Quem jogou por último joga de novo!';
     }
 
     setTimeout(() => {
-        // ✅ ALGUÉM FEZ 2 → RODADA ACABOU
+        // ===== ✅ SÓ TERMINA QUANDO ALGUÉM FIZER 2 =====
         if (vitoriasRodadaJogador === 2) {
             pontosJogador += 2;
             document.getElementById('resultado-rodada').textContent = 
-                `🏆 VOCÊ VENCEU A RODADA! +2 PONTOS!`;
+                `🏆 VOCÊ FEZ 2! GANHOU A RODADA! +2 PONTOS!`;
             quemJogaPrimeiro = 'jogador';
             verificarFimPartida();
             return;
@@ -294,26 +283,24 @@ function verificarVencedor() {
         if (vitoriasRodadaJoao === 2) {
             pontosJoao += 2;
             document.getElementById('resultado-rodada').textContent = 
-                `😔 JOÃO VENCEU A RODADA! +2 PONTOS!`;
+                `😔 JOÃO FEZ 2! GANHOU A RODADA! +2 PONTOS!`;
             quemJogaPrimeiro = 'joao';
             verificarFimPartida();
             return;
         }
 
-        // ✅ CONTINUA A RODADA → QUEM GANHOU JOGA PRÓXIMA
+        // ===== ✅ CONTINUA → MESA LIMPA PARA PRÓXIMA JOGADA =====
         vezDeJogar = vencedor;
         podeJogar = (vezDeJogar === 'jogador');
 
-        // ✅ LIMPA A MESA
-        document.getElementById('carta-jogada-jogador').innerHTML = '';
-        document.getElementById('carta-jogada-joao').innerHTML = '';
+        limparMesa(); // ✅ MESA LIMPA ANTES DA PRÓXIMA JOGADA
 
         exibirCartasJogador();
         exibirCartasJoao();
 
         if (vezDeJogar === 'jogador') {
-            document.getElementById('resultado-rodada').textContent += ' — SUA VEZ! (3 min)';
-            iniciarContagemEspera(); // ⏱️ INICIA A CONTAGEM NOVAMENTE
+            document.getElementById('resultado-rodada').textContent += ' — SUA VEZ!';
+            iniciarContagemEspera();
         } else {
             document.getElementById('resultado-rodada').textContent += ' — João jogando...';
             setTimeout(() => joaoJoga(), 1800);
@@ -335,7 +322,7 @@ function verificarFimPartida() {
         }, 600);
     } else {
         setTimeout(() => {
-            document.getElementById('resultado-rodada').textContent = '🃏 NOVA RODADA!';
+            document.getElementById('resultado-rodada').textContent = '🃏 NOVA RODADA! Limpando a mesa...';
             setTimeout(() => iniciarNovaRodada(), 1500);
         }, 2500);
     }
