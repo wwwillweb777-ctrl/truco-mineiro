@@ -1,4 +1,4 @@
-// ===== TRUCO MINEIRO — JOÃO AGORA SABE BLEFAR! =====
+// ===== TRUCO MINEIRO — VERSÃO FINAL COMPLETA =====
 
 let contadorJogadores = 0;
 let jogadorAtual = null;
@@ -17,6 +17,7 @@ let indiceArrastado = null;
 let quemJogaPrimeiro = 'jogador';
 let vezDeJogar = 'jogador';
 let podeJogar = true;
+let rodadaEmAndamento = true;
 
 // ===== VALORES OFICIAIS =====
 const ETAPAS = [
@@ -152,8 +153,9 @@ function tentarNovaRodada() {
     iniciarNovaPartida();
 }
 
-// ===== ✅ NOVA RODADA =====
+// ===== NOVA RODADA =====
 function iniciarNovaRodada() {
+    rodadaEmAndamento = true;
     criarBaralho();
     cartasJogador = baralho.splice(0, 3);
     cartasJoao = baralho.splice(0, 3);
@@ -193,11 +195,18 @@ function verificarMaoDeDez() {
     return '🎯 Rodada normal';
 }
 
-// ===== BOTÕES =====
+// ===== ✅ BOTÕES — MÃO DE 10 NÃO MOSTRA BOTÃO! =====
 function atualizarBotoesPedido() {
     if (!areaPedidosEl) return;
     let html = '';
-    
+
+    // ✅ SE FOR MÃO DE 10 → NÃO MOSTRA BOTÃO NENHUM!
+    let ehMaoDeDez = (pontosJogador === LIMITE_MAO_DE_10) || (pontosJoao === LIMITE_MAO_DE_10);
+    if (ehMaoDeDez) {
+        areaPedidosEl.innerHTML = '';
+        return;
+    }
+
     if (aguardandoResposta && quemPediu === 'joao') {
         let etapa = ETAPAS[indiceEtapa + 1];
         html = `
@@ -218,7 +227,7 @@ function atualizarBotoesPedido() {
     areaPedidosEl.innerHTML = html;
 }
 
-// ===== VOCÊ PEDE TRUCO =====
+// ===== VOCÊ PEDE AUMENTO =====
 window.pedirAumento = function(tipo) {
     if (aguardandoResposta) return;
     let indicePedido = ETAPAS.findIndex(e => e.nome === tipo);
@@ -226,62 +235,48 @@ window.pedirAumento = function(tipo) {
 
     aguardandoResposta = true;
     quemPediu = 'jogador';
-    resultadoRodadaEl.textContent = `🔴 VOCÊ PEDE ${tipo.toUpperCase()}! (${etapa.valor}pts) João decide...`;
+    resultadoRodadaEl.textContent = `🔴 VOCÊ PEDE ${tipo.toUpperCase()}! (${etapa.valor}pts) João está decidindo...`;
 
     setTimeout(() => {
         let aceita = joaoDecideAceitar(tipo);
+
         if (aceita) {
             indiceEtapa = indicePedido;
             valorAtualRodada = etapa.valor;
             resultadoRodadaEl.textContent = `✅ JOÃO ACEITOU! Agora vale ${etapa.valor}pts!`;
             if (tipo === 'truco') setTimeout(() => joaoPedeSeis(), 1500);
             else if (tipo === 'seis') setTimeout(() => joaoPedeNove(), 1500);
+            else encerraAumento();
         } else {
             pontosJogador += etapa.recusa;
-            resultadoRodadaEl.textContent = `🏃 JOÃO CORREU! VOCÊ GANHA ${etapa.recusa}pts!`;
+            resultadoRodadaEl.textContent = `🏃 JOÃO CORREU! VOCÊ GANHA ${etapa.recusa} PONTOS! ✅`;
             encerraAumento();
         }
+
         atualizarPlacar();
         atualizarBotoesPedido();
-    }, 1200);
+    }, 1500);
 };
 
-// ===== ✅ JOÃO DECIDE: ACEITAR OU CORRER — AGORA COM BLEFE! =====
+// ===== JOÃO DECIDE ACEITAR OU CORRER =====
 function joaoDecideAceitar(tipo) {
     let forcas = cartasJoao.map(c => c.forca);
     let melhorCarta = Math.max(...forcas);
-    let piorCarta = Math.min(...forcas);
-    let media = forcas.reduce((a,b) => a+b, 0) / 3;
-
-    // 🎭 JOÃO SABE QUE VOCÊ TEM BOTÃO DE ACEITAR E CORRER!
-    // Ele calcula: "será que ele vai aceitar ou vai correr?"
-
     let chance = 0.5;
 
-    // Se tiver carta MUITO FORTE → ACEITA DE CORAÇÃO
     if (melhorCarta >= 9) chance = 0.95;
-    // Se tiver carta BOA → aceita com confiança
     else if (melhorCarta >= 7) chance = 0.75;
-    // 🎭 BLEFE: carta fraca MAS arrisca 20% das vezes pra te assustar!
-    else if (melhorCarta >= 5) chance = 0.5;
-    // 🔴 Muito fraco → quase sempre corre... mas às vezes BLEFA!
-    else chance = 0.20; // ← ANTES ERA 0.15! Agora ele blefa mais!
+    else if (melhorCarta >= 5) chance = 0.50;
+    else chance = 0.20;
 
-    // Quanto mais alto o valor, mais ele fica com medo... mas às vezes te engana!
     if (tipo === 'seis') chance *= 0.80;
     if (tipo === 'nove') chance *= 0.65;
-    if (tipo === 'doze') chance *= 0.50;
-
-    // Se ele está perdendo → arrisca MAIS! Blefa mais ainda!
     if (pontosJoao < pontosJogador - 3) chance += 0.15;
-
-    // 🎭 Se você está na frente → ele pensa: "ele pode correr!" → arrisca!
-    if (pontosJogador > pontosJoao) chance += 0.08;
 
     return Math.random() < chance;
 }
 
-// ===== ✅ JOÃO JOGA A CARTA DELE — E SABE PEDIR TRUCO! =====
+// ===== JOÃO JOGA =====
 function joaoJoga() {
     if (vezDeJogar !== 'joao') return;
 
@@ -289,38 +284,27 @@ function joaoJoga() {
     let melhorCarta = Math.max(...forcas);
     let piorCarta = Math.min(...forcas);
 
-    // 🎭 BLEFE: antes de jogar, João decide se vai te assustar pedindo Truco!
     if (!aguardandoResposta && indiceEtapa === -1 && valorAtualRodada < 4) {
         let chanceDePedir = 0;
-
-        // Se tiver carta boa → pede de verdade
         if (melhorCarta >= 8) chanceDePedir = 0.70;
-        // 🎭 BLEFE: carta média MAS pede pra te assustar!
-        else if (melhorCarta >= 5) chanceDePedir = 0.35; // ← BLEFA!
-        // 🎭 BLEFE TOTAL: carta ruim MAS pede de qualquer jeito!
-        else chanceDePedir = 0.15; // ← FINGE QUE TEM CARTA FORTE!
-
-        // Se está perdendo → BLEFA MAIS AINDA!
+        else if (melhorCarta >= 5) chanceDePedir = 0.35;
+        else chanceDePedir = 0.15;
         if (pontosJoao < pontosJogador - 2) chanceDePedir += 0.15;
 
-        // Se decidir pedir → para de jogar e te desafia!
         if (Math.random() < chanceDePedir) {
             aguardandoResposta = true;
             quemPediu = 'joao';
             indiceEtapa = -1;
-            resultadoRodadaEl.textContent = `🔴 JOÃO PEDE TRUCO! Ele sabe que você pode ACEITAR ou CORRER!`;
+            resultadoRodadaEl.textContent = `🔴 JOÃO PEDE TRUCO! Você ACEITA ou CORRE?`;
             atualizarBotoesPedido();
-            return; // ← NÃO JOGA A CARTA AINDA! Ele te desafiou!
+            return;
         }
     }
 
-    // Escolhe a carta para jogar
-    let indiceParaJogar = 0;
-    // Se tem vantagem → joga a pior carta (economiza as fortes)
+    let indiceParaJogar;
     if (melhorCarta >= 7 && vitoriasRodadaJoao > 0) {
         indiceParaJogar = forcas.indexOf(piorCarta);
     } else {
-        // Se está perdendo → joga a melhor!
         indiceParaJogar = forcas.indexOf(melhorCarta);
     }
 
@@ -370,9 +354,8 @@ window.aceitarPedido = function() {
     encerraAumento();
     atualizarPlacar();
     atualizarBotoesPedido();
-    if (etapa.nome === 'seis') { indiceEtapa = 1; setTimeout(() => { atualizarBotoesPedido(); }, 500); }
-    if (etapa.nome === 'truco') { setTimeout(() => joaoPedeSeis(), 1500); }
-    if (etapa.nome === 'seis') { setTimeout(() => joaoPedeNove(), 1500); }
+    if (etapa.nome === 'truco') setTimeout(() => joaoPedeSeis(), 1500);
+    if (etapa.nome === 'seis') setTimeout(() => joaoPedeNove(), 1500);
 };
 
 // ===== VOCÊ CORRE =====
@@ -392,7 +375,7 @@ function encerraAumento() {
         encerrarRodada();
         return;
     }
-    if (!aguardandoResposta && rodadaEmAndamento) {
+    if (rodadaEmAndamento) {
         vezDeJogar = quemJogaPrimeiro;
         podeJogar = true;
         if (vezDeJogar === 'joao') {
