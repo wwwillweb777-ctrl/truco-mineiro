@@ -1,4 +1,4 @@
-// ===== TRUCO MINEIRO — PARTE 1: ORDEM CORRIGIDA CONFORME SUA REGRA =====
+// ===== TRUCO MINEIRO — PARTE 1: ORDEM FINAL CORRIGIDA =====
 
 let contadorJogadores = 0;
 let jogadorAtual = null;
@@ -39,29 +39,29 @@ const naipes = ['♦', '♥', '♠', '♣'];
 // ===== ✅ FORÇA DAS CARTAS — ORDEM QUE VOCÊ ENSINOU! =====
 function calcularForca(valor, naipe) {
 
-    // ⚔️ 1º LUGAR — ZAP (4 de paus) → A MAIS FORTE
+    // ⚔️ 1º — ZAP (4 de paus) → A MAIS FORTE
     if (valor === '4' && naipe === '♣') return 14;
 
-    // 🏆 2º LUGAR — 7 DE COPAS → SEGUNDA MAIS FORTE
+    // 🏆 2º — 7 DE COPAS
     if (valor === '7' && naipe === '♥') return 13;
 
-    // ⚔️ 3º LUGAR — ESPADILHA (Ás de espadas) → TERCEIRA MAIS FORTE
+    // ⚔️ 3º — ESPADILHA (Ás de espadas)
     if (valor === 'A' && naipe === '♠') return 12;
 
-    // 🏆 4º LUGAR — 7 DE OUROS → QUARTA MAIS FORTE
+    // 🏆 4º — 7 DE OUROS
     if (valor === '7' && naipe === '♦') return 11;
 
-    // 🃏 DEMAIS CARTAS — ORDEM NORMAL
-    if (valor === '3') return 10;
+    // 🃏 DEMAIS — DO MAIS FORTE AO MAIS FRACO
+    if (valor === '3') return 10;  // ✅ 3 é mais forte que 2, Ás, Rei... e 7 comum!
     if (valor === '2') return 9;
-    if (valor === 'A') return 8;   // ÁS COMUM
+    if (valor === 'A') return 8;
     if (valor === 'K') return 7;
     if (valor === 'J') return 6;
     if (valor === 'Q') return 5;
-    if (valor === '7') return 4;   // 7 COMUM
+    if (valor === '7') return 4;   // ✅ 7 comum é MAIS FRACO que 3 e 2!
     if (valor === '6') return 3;
     if (valor === '5') return 2;
-    if (valor === '4') return 1;   // 4 COMUM
+    if (valor === '4') return 1;
 
     return 0;
 }
@@ -147,7 +147,7 @@ function iniciarNovaPartida() {
     iniciarNovaRodada();
 }
 
-// ===== ✅ BARALHO COM A ORDEM CORRIGIDA =====
+// ===== ✅ BARALHO COM FORÇA CORRIGIDA =====
 function criarBaralho() {
     baralho = [];
     for (let v of valores)
