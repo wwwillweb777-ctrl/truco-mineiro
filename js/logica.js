@@ -170,7 +170,7 @@ function atualizarPlacar() {
     pontosJoaoEl.textContent = pontosJoao;
 }
 
-// ===== PARTE 2: REGRAS CORRIGIDAS — EMPATE E NÃO JOGA TERCEIRA DESNECESSÁRIA =====
+// ===== PARTE 2: CORRIGIDA — RODADA NOVA E VEZ DE JOGAR =====
 
 // ===== NOVA RODADA =====
 function iniciarNovaRodada() {
@@ -263,7 +263,7 @@ function efetuarJogada() {
     setTimeout(() => joaoJoga(), 1500);
 }
 
-// ===== JOÃO JOGA =====
+// ===== JOÃO JOGA — UMA CARTA SÓ! =====
 function joaoJoga() {
     if (vezDeJogar !== 'joao') return;
 
@@ -278,10 +278,10 @@ function joaoJoga() {
     setTimeout(() => verificarVencedor(), 1200);
 }
 
-// ===== ✅ REGRAS CORRIGIDAS: EMPATE E NÃO JOGA TERCEIRA DESNECESSÁRIA =====
+// ===== ✅ CORRIGIDO: EMPATE, TERCEIRA JOGADA E VEZ DE JOGAR =====
 function verificarVencedor() {
     let vencedor = null;
-    let quemJogouUltimo = vezDeJogar; // ✅ Quem jogou a última carta
+    let quemJogouUltimo = vezDeJogar;
 
     if (cartaJogadaJogador.forca > cartaJogadaJoao.forca) {
         vitoriasRodadaJogador++;
@@ -292,22 +292,22 @@ function verificarVencedor() {
         resultadoRodadaEl.textContent = `❌ JOÃO VENCEU A JOGADA! (${vitoriasRodadaJogador} x ${vitoriasRodadaJoao})`;
         vencedor = 'joao';
     } else {
-        // ✅ REGRA DO EMPATE: Quem JOGOU A ÚLTIMA é quem joga de novo!
+        // ✅ EMPATE: Quem jogou por último joga de novo
         resultadoRodadaEl.textContent = `🤝 EMPATE! Quem jogou a última joga de novo!`;
-        vencedor = quemJogouUltimo; // João jogou por último → João joga de novo
+        vencedor = quemJogouUltimo;
     }
 
     setTimeout(() => {
         cartaJogadaJogadorEl.innerHTML = '';
         cartaJogadaJoaoEl.innerHTML = '';
 
-        // ✅ REGRA: QUEM FIZER 2 PONTOS → RODADA ACABA! NÃO JOGA A TERCEIRA!
+        // ✅ SE ALGUÉM CHEGOU A 2 → ENCERRA RODADA E DISTRIBUI CARTAS NOVAS!
         if (vitoriasRodadaJogador === 2 || vitoriasRodadaJoao === 2) {
             encerrarRodada();
-            return; // ⛔ PARA AQUI! NÃO JOGA MAIS NADA!
+            return;
         }
 
-        // ✅ SÓ CONTINUA SE ESTIVER 0x0 OU 1x1
+        // ✅ SÓ CONTINUA SE AINDA NÃO CHEGOU A 2
         vezDeJogar = vencedor;
         podeJogar = true;
 
@@ -315,14 +315,16 @@ function verificarVencedor() {
         exibirCartasJoao();
         atualizarBotoesPedido();
 
+        // ✅ QUEM VENCEU JOGA A PRÓXIMA — MAS SÓ UMA VEZ! NÃO JOGA MAIS DE UMA!
         if (vencedor === 'joao') {
             podeJogar = false;
             setTimeout(() => joaoJoga(), 1500);
         }
+        // ✅ SE VOCÊ VENCEU → FICA LIBERADO PARA VOCÊ JOGAR!
     }, 1800);
 }
 
-// ===== ENCERRAR RODADA =====
+// ===== ✅ ENCERRA RODADA E INICIA NOVA COM CARTAS NOVAS! =====
 function encerrarRodada() {
     rodadaEmAndamento = false;
     aguardandoResposta = false;
@@ -348,9 +350,10 @@ function encerrarRodada() {
             botaoNovaRodada.style.pointerEvents = 'auto';
         }, 600);
     } else {
+        // ✅ RODADA NOVA DISTRIBUI CARTAS NOVAS!
         setTimeout(() => {
             resultadoRodadaEl.textContent = '🃏 Preparando nova rodada...';
-            iniciarNovaRodada();
+            iniciarNovaRodada(); // ← ISSO CRIA BARALHO NOVO E DISTRIBUI CARTAS NOVAS!
         }, 2500);
     }
 }
