@@ -35,7 +35,22 @@ let quemPediu = null;
 
 const valores = ['4', '5', '6', '7', 'Q', 'J', 'K', 'A', '2', '3'];
 const naipes = ['♦', '♥', '♠', '♣'];
-const forcaCarta = { '4': 1, '5': 2, '6': 3, '7': 4, 'Q': 5, 'J': 6, 'K': 7, 'A': 8, '2': 9, '3': 10 };
+
+// ===== ✅ FORÇA DAS CARTAS — RECONHECE AS 4 CARTAS ESPECIAIS! =====
+function calcularForca(valor, naipe) {
+    // ⚔️ ZAP = 4 de paus → A MAIS FORTE DE TODAS!
+    if (valor === '4' && naipe === '♣') return 14;
+    // ⚔️ ESPADILHA = Ás de espadas → SEGUNDA MAIS FORTE!
+    if (valor === 'A' && naipe === '♠') return 13;
+    // 🏆 7 DE COPAS → TERCEIRA MAIS FORTE!
+    if (valor === '7' && naipe === '♥') return 12;
+    // 🏆 7 DE OUROS → QUARTA MAIS FORTE!
+    if (valor === '7' && naipe === '♦') return 11;
+
+    // 🃏 DEMAIS CARTAS — ORDEM NORMAL
+    const ordemNormal = { '3': 10, '2': 9, 'A': 8, 'K': 7, 'J': 6, 'Q': 5, '7': 4, '6': 3, '5': 2, '4': 1 };
+    return ordemNormal[valor] || 0;
+}
 
 const CORES = { truco: '#ffc107', seis: '#ff6b00', nove: '#e53935' };
 
@@ -118,12 +133,12 @@ function iniciarNovaPartida() {
     iniciarNovaRodada();
 }
 
-// ===== CARTAS E BARALHO =====
+// ===== ✅ CARTAS E BARALHO — CORRIGIDO! =====
 function criarBaralho() {
     baralho = [];
     for (let v of valores)
         for (let n of naipes)
-            baralho.push({ valor: v, naipe: n, forca: forcaCarta[v] });
+            baralho.push({ valor: v, naipe: n, forca: calcularForca(v, n) });
     embaralhar();
 }
 
@@ -138,6 +153,7 @@ function atualizarPlacar() {
     pontosJogadorEl.textContent = pontosJogador;
     pontosJoaoEl.textContent = pontosJoao;
 }
+
 
 // ===== PARTE 2: RODADA, JOGADAS E JOÃO — CORRIGIDO =====
 
