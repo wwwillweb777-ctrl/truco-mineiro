@@ -54,6 +54,48 @@
                 <button id="botao-4jogadores">🔴 4 Jogadores (Duplas)</button>
             </div>
         </section>
+
+        <!-- TELA DO JOGO CONTRA A MÁQUINA 1x1 -->
+        <section id="tela-maquina-1x1" style="display: none;">
+            <h3>🤖 VOCÊ vs JOÃO</h3>
+            
+            <!-- ADVERSÁRIO EM CIMA -->
+            <div class="area-adversario">
+                <div class="jogador-cabecalho">
+                    <span class="avatar">🤵‍♂️</span>
+                    <strong>João</strong>
+                    <span class="pontos">Pontos: <span id="pontos-joao">0</span></span>
+                </div>
+                <div id="cartas-joao" class="cartas-jogador"></div>
+            </div>
+
+            <!-- CARTA JOGADA NA MESA -->
+            <div class="area-mesa">
+                <h4>🃏 MESA</h4>
+                <div class="cartas-mesa">
+                    <div id="carta-jogada-joao" class="carta-mesa"></div>
+                    <div id="carta-jogada-jogador" class="carta-mesa"></div>
+                </div>
+                <p id="resultado-rodada"></p>
+            </div>
+
+            <!-- JOGADOR EM BAIXO -->
+            <div class="area-jogador">
+                <div class="jogador-cabecalho">
+                    <span class="avatar">👤</span>
+                    <strong id="nome-jogador">Você</strong>
+                    <span class="pontos">Pontos: <span id="pontos-jogador">0</span></span>
+                </div>
+                <div id="suas-cartas" class="cartas-jogador"></div>
+            </div>
+
+            <!-- BOTÕES DE AÇÃO -->
+            <div class="botoes-acao">
+                <button id="botao-jogar-carta">🃏 Jogar Carta Selecionada</button>
+                <button id="botao-nova-rodada">🔄 Nova Rodada</button>
+                <button id="botao-sair">🚪 Sair do Jogo</button>
+            </div>
+        </section>
     </main>
 
     <script src="js/logica.js"></script>
