@@ -1,4 +1,4 @@
-// ===== TRUCO MINEIRO FINAL — BOTÕES CERTOS + ACEITAR/CORRER! =====
+// ===== TRUCO MINEIRO FINAL — CORRIGIDO: NOVA RODADA COM CARTAS NOVAS! =====
 
 let contadorJogadores = 0;
 let jogadorAtual = null;
@@ -197,13 +197,12 @@ function verificarMaoDeDez() {
     return '🎯 Rodada normal';
 }
 
-// ===== ✅ AQUI APARECEM OS BOTÕES CERTOS! =====
+// ===== BOTÕES CERTOS =====
 function atualizarBotoesPedido() {
     if (!areaPedidosEl) return;
     let html = '';
     
     if (aguardandoResposta && quemPediu === 'joao') {
-        // ✅ JOÃO PEDIU → VOCÊ DECIDE: ACEITAR ou CORRER!
         let etapa = ETAPAS[indiceEtapa + 1];
         html = `
             <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
@@ -212,20 +211,16 @@ function atualizarBotoesPedido() {
             </div>
         `;
     } else if (!aguardandoResposta && vezDeJogar === 'jogador') {
-        // ✅ É SUA VEZ DE PEDIR → SÓ APARECE O QUE VOCÊ PODE PEDIR!
         if (indiceEtapa === -1) {
-            // AINDA NÃO FOI PEDIDO NADA → VOCÊ PEDE TRUCO
             html = `<button onclick="pedirAumento('truco')" style="padding:10px 16px; background:${CORES.truco}; color:#000; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">🎯 PEDIR TRUCO (4pts)</button>`;
         } else if (indiceEtapa === 1) {
-            // JOÃO ACEITOU SEIS → VOCÊ PEDE NOVE
             html = `<button onclick="pedirAumento('nove')" style="padding:10px 16px; background:${CORES.nove}; color:#fff; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">🎯 PEDIR NOVE (12pts)</button>`;
         }
     }
-
     areaPedidosEl.innerHTML = html;
 }
 
-// ===== ✅ VOCÊ PEDE TRUCO / NOVE =====
+// ===== VOCÊ PEDE TRUCO / NOVE =====
 window.pedirAumento = function(tipo) {
     if (aguardandoResposta) return;
     let indicePedido = ETAPAS.findIndex(e => e.nome === tipo);
@@ -241,7 +236,6 @@ window.pedirAumento = function(tipo) {
             indiceEtapa = indicePedido;
             valorAtualRodada = etapa.valor;
             resultadoRodadaEl.textContent = `✅ JOÃO ACEITOU! Agora vale ${etapa.valor}pts!`;
-            // ✅ SE ACEITOU → JOÃO PODE PEDIR SEIS OU DOZE
             if (tipo === 'truco') setTimeout(() => joaoPedeSeis(), 1500);
             else if (tipo === 'nove') setTimeout(() => joaoPedeDoze(), 1500);
         } else {
@@ -254,7 +248,7 @@ window.pedirAumento = function(tipo) {
     }, 1200);
 };
 
-// ===== ✅ JOÃO DECIDE ACEITAR OU CORRER =====
+// ===== JOÃO DECIDE =====
 function joaoDecideAceitar(tipo) {
     let melhorCarta = Math.max(...cartasJoao.map(c => c.forca));
     let chance = 0.5;
@@ -269,7 +263,7 @@ function joaoDecideAceitar(tipo) {
     return Math.random() < chance;
 }
 
-// ===== ✅ JOÃO PEDE SEIS =====
+// ===== JOÃO PEDE SEIS =====
 function joaoPedeSeis() {
     let melhorCarta = Math.max(...cartasJoao.map(c => c.forca));
     let chance = melhorCarta >= 8 ? 0.6 : melhorCarta >= 6 ? 0.25 : 0.02;
@@ -283,7 +277,7 @@ function joaoPedeSeis() {
     atualizarBotoesPedido();
 }
 
-// ===== ✅ JOÃO PEDE DOZE =====
+// ===== JOÃO PEDE DOZE =====
 function joaoPedeDoze() {
     let melhorCarta = Math.max(...cartasJoao.map(c => c.forca));
     let chance = melhorCarta >= 9 ? 0.5 : melhorCarta >= 7 ? 0.2 : 0.01;
@@ -297,7 +291,7 @@ function joaoPedeDoze() {
     atualizarBotoesPedido();
 }
 
-// ===== ✅ VOCÊ ACEITA =====
+// ===== VOCÊ ACEITA =====
 window.aceitarPedido = function() {
     let etapa = ETAPAS[indiceEtapa + 1];
     indiceEtapa = indiceEtapa + 1;
@@ -306,11 +300,10 @@ window.aceitarPedido = function() {
     encerraAumento();
     atualizarPlacar();
     atualizarBotoesPedido();
-    // Se foi SEIS → VOCÊ PODE PEDIR NOVE
     if (etapa.nome === 'seis') { indiceEtapa = 1; setTimeout(() => { atualizarBotoesPedido(); }, 500); }
 };
 
-// ===== ✅ VOCÊ CORRE =====
+// ===== VOCÊ CORRE =====
 window.recusarPedido = function() {
     let etapa = ETAPAS[indiceEtapa + 1];
     pontosJoao += etapa.recusa;
@@ -439,8 +432,14 @@ function verificarVencedor() {
     }
 }
 
+// ===== ✅ ENCERRA RODADA E INICIA NOVA COM CARTAS NOVAS! =====
 function encerrarRodada() {
     rodadaEmAndamento = false;
+    aguardandoResposta = false;
+    quemPediu = null;
+    valorAtualRodada = 2;
+    indiceEtapa = -1;
+
     if (vitoriasRodadaJogador > vitoriasRodadaJoao) {
         pontosJogador += valorAtualRodada;
         resultadoRodadaEl.textContent = `🏆 VOCÊ VENCEU A RODADA! +${valorAtualRodada}pts`;
@@ -452,13 +451,19 @@ function encerrarRodada() {
     } else {
         resultadoRodadaEl.textContent = '🤝 EMPATE NA RODADA! Ninguém pontua.';
     }
-    valorAtualRodada = 2;
-    indiceEtapa = -1;
-    aguardandoResposta = false;
-    quemPediu = null;
+
     atualizarPlacar();
     atualizarBotoesPedido();
-    verificarFimDePartida();
+
+    // ✅ SE NÃO CHEGOU A 12 → NOVA RODADA COM CARTAS NOVAS!
+    if (pontosJogador >= PONTOS_PARTIDA || pontosJoao >= PONTOS_PARTIDA) {
+        verificarFimDePartida();
+    } else {
+        setTimeout(() => {
+            resultadoRodadaEl.textContent = '🃏 Preparando nova rodada...';
+            iniciarNovaRodada(); // ✅ EMBARALHA + DÁ CARTAS NOVAS!
+        }, 2500);
+    }
 }
 
 function verificarFimDePartida() {
@@ -474,8 +479,6 @@ function verificarFimDePartida() {
             botaoNovaRodada.style.opacity = '1';
             botaoNovaRodada.style.pointerEvents = 'auto';
         }, 600);
-    } else if (rodadaEmAndamento) {
-        setTimeout(() => iniciarNovaRodada(), 2500);
     }
 }
 
