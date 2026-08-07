@@ -170,8 +170,7 @@ function atualizarPlacar() {
     pontosJoaoEl.textContent = pontosJoao;
 }
 
-
-// ===== PARTE 2: RODADA, JOGADAS E JOÃO — CORRIGIDO =====
+// ===== PARTE 2: RODADA, JOGADAS E JOÃO — CORRIGIDA DEFINITIVAMENTE =====
 
 // ===== NOVA RODADA =====
 function iniciarNovaRodada() {
@@ -215,7 +214,7 @@ function verificarMaoDeDez() {
     return '🎯 Rodada normal';
 }
 
-// ===== BOTÕES — MÃO DE 10 ESCONDE TRUCO =====
+// ===== BOTÕES =====
 function atualizarBotoesPedido() {
     if (!areaPedidosEl) return;
     let html = '';
@@ -264,7 +263,7 @@ function efetuarJogada() {
     setTimeout(() => joaoJoga(), 1500);
 }
 
-// ===== JOÃO JOGA =====
+// ===== JOÃO JOGA — UMA CARTA SÓ! =====
 function joaoJoga() {
     if (vezDeJogar !== 'joao') return;
 
@@ -279,17 +278,17 @@ function joaoJoga() {
     setTimeout(() => verificarVencedor(), 1200);
 }
 
-// ===== ✅ CORRIGIDO — JOÃO JOGA UMA SÓ E PARA =====
+// ===== ✅ CORRIGIDO: JOÃO JOGA UMA VEZ E PARA! =====
 function verificarVencedor() {
     let vencedor = null;
 
     if (cartaJogadaJogador.forca > cartaJogadaJoao.forca) {
         vitoriasRodadaJogador++;
-        resultadoRodadaEl.textContent = `✅ VOCÊ VENCEU! (${vitoriasRodadaJogador} x ${vitoriasRodadaJoao})`;
+        resultadoRodadaEl.textContent = `✅ VOCÊ VENCEU A JOGADA! (${vitoriasRodadaJogador} x ${vitoriasRodadaJoao})`;
         vencedor = 'jogador';
     } else if (cartaJogadaJogador.forca < cartaJogadaJoao.forca) {
         vitoriasRodadaJoao++;
-        resultadoRodadaEl.textContent = `❌ JOÃO VENCEU! (${vitoriasRodadaJogador} x ${vitoriasRodadaJoao})`;
+        resultadoRodadaEl.textContent = `❌ JOÃO VENCEU A JOGADA! (${vitoriasRodadaJogador} x ${vitoriasRodadaJoao})`;
         vencedor = 'joao';
     } else {
         resultadoRodadaEl.textContent = '🤝 EMPATE! Quem começou joga a próxima!';
@@ -305,18 +304,20 @@ function verificarVencedor() {
             return;
         }
 
+        // ✅ QUEM VENCEU JOGA A PRÓXIMA JOGADA — MAS SÓ UMA! DEPOIS PASSA A VEZ!
         vezDeJogar = vencedor;
-        podeJogar = true; // ✅ SEMPRE LIBERA DEPOIS!
+        podeJogar = true;
 
         exibirCartas();
         exibirCartasJoao();
         atualizarBotoesPedido();
 
-        // ✅ SÓ JOGA DE NOVO SE FOR A VEZ DELE — UMA POR VEZ!
+        // ✅ SE JOÃO VENCEU → ELE JOGA A PRÓXIMA UMA VEZ SÓ! DEPOIS É A SUA VEZ!
         if (vencedor === 'joao') {
             podeJogar = false;
             setTimeout(() => joaoJoga(), 1500);
         }
+        // ✅ SE VOCÊ VENCEU → JÁ FICA LIBERADO PARA VOCÊ JOGAR!
     }, 1800);
 }
 
