@@ -139,25 +139,6 @@ function atualizarPlacar() {
     pontosJoaoEl.textContent = pontosJoao;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // ===== PARTE 2: RODADA, JOGADAS E JOÃO =====
 
 // ===== NOVA RODADA =====
