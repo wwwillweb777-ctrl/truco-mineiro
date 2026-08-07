@@ -139,7 +139,7 @@ function atualizarPlacar() {
     pontosJoaoEl.textContent = pontosJoao;
 }
 
-// ===== PARTE 2: RODADA, JOGADAS E JOÃO — VERSÃO CORRIGIDA =====
+// ===== PARTE 2: RODADA, JOGADAS E JOÃO — CORRIGIDO =====
 
 // ===== NOVA RODADA =====
 function iniciarNovaRodada() {
@@ -168,7 +168,6 @@ function iniciarNovaRodada() {
     exibirCartasJoao();
     atualizarBotoesPedido();
 
-    // ✅ SE JOÃO JOGA PRIMEIRO — CHAMA ELE DIRETO!
     if (vezDeJogar === 'joao') {
         podeJogar = false;
         setTimeout(() => joaoJoga(), 1500);
@@ -189,7 +188,6 @@ function atualizarBotoesPedido() {
     if (!areaPedidosEl) return;
     let html = '';
 
-    // ✅ MÃO DE 10 → SEM BOTÃO!
     let ehMaoDeDez = (pontosJogador === LIMITE_MAO_DE_10) || (pontosJoao === LIMITE_MAO_DE_10);
     if (ehMaoDeDez) {
         areaPedidosEl.innerHTML = '';
@@ -215,12 +213,11 @@ function atualizarBotoesPedido() {
     areaPedidosEl.innerHTML = html;
 }
 
-// ===== ✅ VOCÊ JOGA — CORRIGIDO! AGORA JOÃO JOGA DEPOIS! =====
+// ===== VOCÊ JOGA =====
 function efetuarJogada() {
     if (cartaSelecionada === null || !cartasJogador[cartaSelecionada]) return;
     if (vezDeJogar !== 'jogador' || !podeJogar || aguardandoResposta) return;
 
-    // ✅ VOCÊ JOGA A CARTA
     podeJogar = false;
     cartaJogadaJogador = cartasJogador.splice(cartaSelecionada, 1)[0];
     mostrarNaMesa(cartaJogadaJogador, cartaJogadaJogadorEl);
@@ -228,36 +225,29 @@ function efetuarJogada() {
     cartaSelecionada = null;
     exibirCartas();
 
-    // ✅ AQUI ESTAVA O ERRO — AGORA AVISA QUE É A VEZ DO JOÃO!
-    vezDeJogar = 'joao';           // ← MUDA A VEZ!
-    areaPedidosEl.innerHTML = '';    // ← SOME O BOTÃO!
+    vezDeJogar = 'joao';
+    areaPedidosEl.innerHTML = '';
     atualizarBotoesPedido();
 
-    // ✅ CHAMA O JOÃO — GARANTIDO!
-    setTimeout(() => {
-        joaoJoga();
-    }, 1500);
+    setTimeout(() => joaoJoga(), 1500);
 }
 
-// ===== ✅ JOÃO JOGA =====
+// ===== JOÃO JOGA =====
 function joaoJoga() {
     if (vezDeJogar !== 'joao') return;
 
-    // Escolhe a MELHOR carta que ele tem
     let forcas = cartasJoao.map(c => c.forca);
     let melhorForca = Math.max(...forcas);
     let indiceMelhor = forcas.indexOf(melhorForca);
 
-    // Joga a carta!
     cartaJogadaJoao = cartasJoao.splice(indiceMelhor, 1)[0];
     mostrarNaMesa(cartaJogadaJoao, cartaJogadaJoaoEl);
     resultadoRodadaEl.textContent = `🃏 João jogou: ${cartaJogadaJoao.valor} de ${cartaJogadaJoao.naipe}`;
 
-    // Compara as cartas
     setTimeout(() => verificarVencedor(), 1200);
 }
 
-// ===== COMPARA E DECIDE QUEM VENCEU =====
+// ===== ✅ CORRIGIDO — JOÃO JOGA UMA SÓ E PARA =====
 function verificarVencedor() {
     let vencedor = null;
 
@@ -274,7 +264,6 @@ function verificarVencedor() {
         vencedor = quemJogaPrimeiro;
     }
 
-    // Limpa a mesa e continua
     setTimeout(() => {
         cartaJogadaJogadorEl.innerHTML = '';
         cartaJogadaJoaoEl.innerHTML = '';
@@ -285,12 +274,13 @@ function verificarVencedor() {
         }
 
         vezDeJogar = vencedor;
-        podeJogar = true;
+        podeJogar = true; // ✅ SEMPRE LIBERA DEPOIS!
+
         exibirCartas();
         exibirCartasJoao();
         atualizarBotoesPedido();
 
-        // Se João ganhou, ele joga de novo
+        // ✅ SÓ JOGA DE NOVO SE FOR A VEZ DELE — UMA POR VEZ!
         if (vencedor === 'joao') {
             podeJogar = false;
             setTimeout(() => joaoJoga(), 1500);
@@ -331,7 +321,7 @@ function encerrarRodada() {
     }
 }
 
-// ===== EXIBIR CARTAS NA TELA =====
+// ===== EXIBIR CARTAS =====
 function exibirCartas() {
     suasCartasEl.innerHTML = '';
     cartasJogador.forEach((carta, i) => {
@@ -343,7 +333,6 @@ function exibirCartas() {
         div.addEventListener('click', () => {
             if (vezDeJogar !== 'jogador' || !podeJogar || aguardandoResposta) return;
             cartaSelecionada = i;
-            // Marca selecionada
             document.querySelectorAll('#suas-cartas .carta').forEach((el, idx) => {
                 el.style.transform = idx === i ? 'translateY(-10px)' : '';
                 el.style.boxShadow = idx === i ? '0 0 15px #ffd700' : '';
@@ -371,7 +360,7 @@ function mostrarNaMesa(carta, el) {
     el.innerHTML = `<span style="font-size:1.3rem; font-weight:bold;">${carta.valor}</span><span style="font-size:1.5rem;">${carta.naipe}</span>`;
 }
 
-// ===== TRUCO — PEDE E RESPONDE =====
+// ===== TRUCO =====
 window.pedirAumento = function(tipo) {
     if (aguardandoResposta) return;
     let indicePedido = ETAPAS.findIndex(e => e.nome === tipo);
