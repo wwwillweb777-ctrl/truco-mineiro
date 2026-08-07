@@ -1,4 +1,4 @@
-// ===== LÓGICA DO TRUCO MINEIRO ONLINE — ARRASTAR E SOLTAR =====
+// ===== TRUCO MINEIRO — ARRASTAR OU TOCAR E JOGAR =====
 
 let contadorJogadores = 0;
 let jogadorAtual = null;
@@ -27,7 +27,6 @@ const telaModo = document.getElementById('tela-modo');
 const telaJogo = document.getElementById('tela-jogo');
 const telaMaquina1x1 = document.getElementById('tela-maquina-1x1');
 const meuIdMostrar = document.getElementById('meu-id');
-const listaJogando = document.getElementById('lista-jogando');
 const listaEspera = document.getElementById('lista-espera');
 
 const botaoModoPessoas = document.getElementById('modo-pessoas');
@@ -42,20 +41,14 @@ let botaoNovaRodada, botaoSair;
 botaoMatricular.addEventListener('click', function() {
     let nome = campoNome.value.trim();
     if (nome.length === 0) {
-        avisoMatricula.innerHTML = '<span style="color:#ff6b6b;">⚠️ Digite seu nome primeiro!</span>';
-        return;
-    }
-    if (nome.length < 2) {
-        avisoMatricula.innerHTML = '<span style="color:#ff6b6b;">⚠️ Nome muito curto!</span>';
+        avisoMatricula.innerHTML = '<span style="color:#ff6b6b;">⚠️ Digite seu nome!</span>';
         return;
     }
     contadorJogadores++;
-    let identificador = nome + ' #' + contadorJogadores;
-    jogadorAtual = { nome, id: identificador };
+    jogadorAtual = { nome, id: nome + ' #' + contadorJogadores };
     telaMatricula.style.display = 'none';
     telaModo.style.display = 'block';
-    meuIdMostrar.textContent = identificador;
-    avisoMatricula.innerHTML = '<span style="color:#51cf66;">✅ Matrícula realizada com sucesso!</span>';
+    meuIdMostrar.textContent = jogadorAtual.id;
 });
 
 // ===== ESCOLHA DE MODO =====
@@ -64,16 +57,14 @@ botaoModoPessoas.addEventListener('click', function() {
     telaModo.style.display = 'none';
     telaJogo.style.display = 'block';
     listaJogadoresNaFila.push(jogadorAtual);
-    atualizarListasTela();
     alert('🌐 Aguardando adversário...');
 });
 
 botaoModoMaquina1x1.addEventListener('click', function() {
-    jogadorAtual.modoJogo = 'maquina-1x1';
     telaModo.style.display = 'none';
     telaMaquina1x1.style.display = 'block';
-    inicializarElementosTelaMaquina();
-    configurarArrastoMesa();
+    inicializarElementos();
+    configurarMesa();
     iniciarNovaPartida();
 });
 
@@ -82,7 +73,7 @@ botaoModoMaquinaDuplas.addEventListener('click', function() {
 });
 
 // ===== INICIALIZA TELA =====
-function inicializarElementosTelaMaquina() {
+function inicializarElementos() {
     nomeJogadorEl = document.getElementById('nome-jogador');
     suasCartasEl = document.getElementById('suas-cartas');
     cartasJoaoEl = document.getElementById('cartas-joao');
@@ -100,7 +91,7 @@ function inicializarElementosTelaMaquina() {
 }
 
 // ===== ÁREA DA MESA — RECEBE CARTA SOLTA =====
-function configurarArrastoMesa() {
+function configurarMesa() {
     const areaMesa = document.querySelector('.area-mesa');
     if (!areaMesa) return;
     areaMesa.addEventListener('dragover', e => e.preventDefault());
@@ -108,7 +99,7 @@ function configurarArrastoMesa() {
         e.preventDefault();
         if (indiceArrastado !== null) {
             cartaSelecionada = indiceArrastado;
-            jogarCarta();
+            efetuarJogada();
         }
     });
 }
@@ -146,12 +137,12 @@ function iniciarNovaRodada() {
     resultadoRodadaEl.textContent = '';
     cartaJogadaJogadorEl.innerHTML = '';
     cartaJogadaJoaoEl.innerHTML = '';
-    exibirCartasJogador();
+    exibirCartas();
     exibirCartasJoao();
 }
 
 // ===== MOSTRA CARTAS NA MÃO =====
-function exibirCartasJogador() {
+function exibirCartas() {
     suasCartasEl.innerHTML = '';
     cartasJogador.forEach((carta, i) => {
         if (!carta) return;
@@ -161,20 +152,22 @@ function exibirCartasJogador() {
         div.draggable = true;
         div.innerHTML = `<span>${carta.valor}</span><span class="naipe">${carta.naipe}</span>`;
 
-        // Clica → seleciona (borda amarela)
-        div.addEventListener('click', function() {
-            document.querySelectorAll('#suas-cartas .carta').forEach(c => c.classList.remove('selecionada'));
-            cartaSelecionada = i;
-            div.classList.add('selecionada');
-        });
-
-        // Arrasta → guarda qual carta
+        // ✋ ARRASTAR (computador)
         div.addEventListener('dragstart', function(e) {
             indiceArrastado = i;
             cartaSelecionada = i;
             document.querySelectorAll('#suas-cartas .carta').forEach(c => c.classList.remove('selecionada'));
-            div.classList.add('selecionada');
+            this.classList.add('selecionada');
             e.dataTransfer.effectAllowed = 'move';
+        });
+
+        // 👆 TOCA = JOGA DIRETO (celular)
+        div.addEventListener('click', function() {
+            cartaSelecionada = i;
+            document.querySelectorAll('#suas-cartas .carta').forEach(c => c.classList.remove('selecionada'));
+            this.classList.add('selecionada');
+            // ⏱️ Pequeno delay para mostrar o amarelo ANTES de jogar
+            setTimeout(() => efetuarJogada(), 150);
         });
 
         suasCartasEl.appendChild(div);
@@ -194,10 +187,9 @@ function exibirCartasJoao() {
     });
 }
 
-// ===== JOGAR A CARTA SOLTA NA MESA =====
-function jogarCarta() {
+// ===== JOGA A CARTA NA MESA =====
+function efetuarJogada() {
     if (cartaSelecionada === null || !cartasJogador[cartaSelecionada]) {
-        alert('⚠️ Arraste uma carta até a MESA!');
         return;
     }
 
@@ -238,7 +230,7 @@ function jogarCarta() {
         atualizarPlacar();
     }
 
-    exibirCartasJogador();
+    exibirCartas();
     exibirCartasJoao();
     cartaSelecionada = indiceArrastado = null;
 }
@@ -256,14 +248,13 @@ function sairDoJogo() {
     if (confirm('🚪 Sair do jogo?')) {
         telaMaquina1x1.style.display = 'none';
         telaMatricula.style.display = 'block';
-        campoNome.value = '';
     }
 }
 
 // ===== TELA DE PESSOAS =====
 function atualizarListasTela() {
     if (listaJogadoresNaFila.length === 0) {
-        listaEspera.innerHTML = '<p>Ninguém na fila de espera.</p>';
+        listaEspera.innerHTML = '<p>Ninguém na fila.</p>';
     } else {
         listaEspera.innerHTML = listaJogadoresNaFila.map(j => `<p>⏳ ${j.id}</p>`).join('');
     }
