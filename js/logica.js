@@ -139,7 +139,7 @@ function atualizarPlacar() {
     pontosJoaoEl.textContent = pontosJoao;
 }
 
-// ===== PARTE 2: RODADA, JOGADAS E JOÃO =====
+// ===== PARTE 2: RODADA, JOGADAS E JOÃO — VERSÃO CORRIGIDA =====
 
 // ===== NOVA RODADA =====
 function iniciarNovaRodada() {
@@ -215,34 +215,33 @@ function atualizarBotoesPedido() {
     areaPedidosEl.innerHTML = html;
 }
 
-// ===== VOCÊ JOGA A CARTA =====
+// ===== ✅ VOCÊ JOGA — CORRIGIDO! AGORA JOÃO JOGA DEPOIS! =====
 function efetuarJogada() {
     if (cartaSelecionada === null || !cartasJogador[cartaSelecionada]) return;
     if (vezDeJogar !== 'jogador' || !podeJogar || aguardandoResposta) return;
 
+    // ✅ VOCÊ JOGA A CARTA
     podeJogar = false;
     cartaJogadaJogador = cartasJogador.splice(cartaSelecionada, 1)[0];
     mostrarNaMesa(cartaJogadaJogador, cartaJogadaJogadorEl);
     resultadoRodadaEl.textContent = `🃏 Você jogou: ${cartaJogadaJogador.valor} de ${cartaJogadaJogador.naipe}`;
     cartaSelecionada = null;
     exibirCartas();
+
+    // ✅ AQUI ESTAVA O ERRO — AGORA AVISA QUE É A VEZ DO JOÃO!
+    vezDeJogar = 'joao';           // ← MUDA A VEZ!
+    areaPedidosEl.innerHTML = '';    // ← SOME O BOTÃO!
     atualizarBotoesPedido();
 
-    // ✅ DEPOIS QUE VOCÊ JOGA → CHAMA JOÃO EM 1,5s!
+    // ✅ CHAMA O JOÃO — GARANTIDO!
     setTimeout(() => {
-        console.log('🔴 AGORA JOÃO JOGA!'); // ← Para ver no console
         joaoJoga();
     }, 1500);
 }
 
-// ===== ✅ JOÃO JOGA — SIMPLIFICADO! =====
+// ===== ✅ JOÃO JOGA =====
 function joaoJoga() {
-    console.log('🟡 FUNÇÃO JOÃO JOGA FOI CHAMADA!'); // ← Para ver se entrou!
-
-    if (vezDeJogar !== 'joao') {
-        console.log('❌ Não é a vez do João!');
-        return;
-    }
+    if (vezDeJogar !== 'joao') return;
 
     // Escolhe a MELHOR carta que ele tem
     let forcas = cartasJoao.map(c => c.forca);
@@ -253,8 +252,6 @@ function joaoJoga() {
     cartaJogadaJoao = cartasJoao.splice(indiceMelhor, 1)[0];
     mostrarNaMesa(cartaJogadaJoao, cartaJogadaJoaoEl);
     resultadoRodadaEl.textContent = `🃏 João jogou: ${cartaJogadaJoao.valor} de ${cartaJogadaJoao.naipe}`;
-
-    console.log('🟢 João jogou! Verificando vencedor...');
 
     // Compara as cartas
     setTimeout(() => verificarVencedor(), 1200);
@@ -437,4 +434,3 @@ function encerraAumento() {
         if (vezDeJogar === 'joao') setTimeout(() => joaoJoga(), 1500);
     }
 }
-
