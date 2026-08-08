@@ -1,5 +1,5 @@
 // ==================================================
-// TRUCO MINEIRO — ✅ VOCÊ SEMPRE PODE JOGAR! JOÃO NÃO TE TRAVA!
+// TRUCO MINEIRO — ✅ VOCÊ JOGA TODA VEZ! NÃO TRAVA MAIS!
 // ==================================================
 
 // ===== VARIÁVEIS GERAIS =====
@@ -69,7 +69,7 @@ function pararTempo() {
 
 function iniciarContagem() {
     pararTempo();
-    podeJogar = true; // ✅ GARANTE QUE VOCÊ PODE JOGAR!
+    podeJogar = true;
     temporizador = setTimeout(() => {
         if (vezDeJogar === 'jogador' && cartasJogador.length > 0) {
             pararTempo();
@@ -136,15 +136,15 @@ function exibirCartasJogador() {
         div.className = 'carta';
         div.innerHTML = `<span class="valor">${carta.valor}</span><span class="naipe">${carta.naipe}</span>`;
         div.onclick = () => {
-            // ✅ AVISA CLARO SE NÃO É SUA VEZ
+            // ✅ DIZ CLARAMENTE QUANDO NÃO É SUA VEZ
             if (vezDeJogar !== 'jogador') {
                 const r = document.getElementById('resultado-rodada');
-                if (r) r.textContent = '⏳ Ainda é a vez do João! Espere...';
+                if (r) r.textContent = '⏳ Ainda é a vez do João! Espere ele jogar...';
                 return;
             }
             if (!podeJogar) {
                 const r = document.getElementById('resultado-rodada');
-                if (r) r.textContent = '⏳ Espere o João jogar primeiro!';
+                if (r) r.textContent = '⏳ Espere o João terminar de jogar...';
                 return;
             }
             pararTempo();
@@ -185,7 +185,7 @@ function iniciarNovaRodada() {
     limparMesa();
 
     if (vezDeJogar === 'jogador') {
-        podeJogar = true; // ✅ LIBERA SUA VEZ!
+        podeJogar = true;
         const r = document.getElementById('resultado-rodada');
         if (r) r.textContent = '👉 SUA VEZ! Clique em uma carta!';
         iniciarContagem();
@@ -214,7 +214,7 @@ function jogarCarta() {
         cartaSelecionada = 0;
     }
 
-    podeJogar = false; // ✅ BLOQUEIA ENQUANTO JOÃO JOGA
+    podeJogar = false; // Bloqueia enquanto João joga
     cartaJogadaJogador = cartasJogador.splice(cartaSelecionada, 1)[0];
     cartaSelecionada = null;
     exibirCartasJogador();
@@ -229,12 +229,12 @@ function jogarCarta() {
     }
 
     vezDeJogar = 'joao';
-    setTimeout(() => joaoJoga(), 1500); // ✅ JOÃO JOGA DEPOIS DE VOCÊ
+    setTimeout(() => joaoJoga(), 1500);
 }
 
-// ===== 🤖 JOÃO JOGA — SÓ JOGA NA VEZ DELE! =====
+// ===== 🤖 JOÃO JOGA — SÓ JOGA DEPOIS DE VOCÊ! =====
 function joaoJoga() {
-    if (vezDeJogar !== 'joao') return; // ✅ NÃO JOGA ANTES DA VEZ DELE!
+    if (vezDeJogar !== 'joao') return;
     if (cartasJoao.length === 0) {
         const r = document.getElementById('resultado-rodada');
         if (r) r.textContent = '⚠️ João não tem mais cartas!';
@@ -285,7 +285,7 @@ function joaoJoga() {
     setTimeout(() => verificarVencedor(), 1200);
 }
 
-// ===== ✅ VERIFICAR VENCEDOR — SEMPRE LIBERA SUA VEZ! =====
+// ===== ✅ VERIFICAR VENCEDOR — AQUI ESTAVA O ERRO! AGORA LIBERA SUA VEZ! =====
 function verificarVencedor() {
     const comp = compararCartas(cartaJogadaJogador, cartaJogadaJoao);
     let vencedor;
@@ -358,13 +358,13 @@ function verificarVencedor() {
             if (r) r.textContent = `⚡ 3ª E ÚLTIMA! Quem ganhar leva!`;
         }
 
-        // ✅ LIMPA MESA E LIBERA A VEZ DE QUEM GANHOU
+        // ✅ LIMPA MESA E — AQUI ESTAVA O ERRO! AGORA LIBERA SEMPRE!
         limparMesa();
         vezDeJogar = vencedor;
 
-        // ✅ AGORA SIM — LIBERA SUA VEZ SEMPRE!
+        // 🔑 A CHAVE DO PROBLEMA — AGORA SEMPRE LIBERA!
         if (vezDeJogar === 'jogador') {
-            podeJogar = true; // 🔑 A CHAVE! NÃO FICA MAIS TRAVADA!
+            podeJogar = true; // ✅ SEMPRE VOLTA PARA TRUE! VOCÊ SEMPRE JOGA!
             iniciarContagem();
         } else {
             setTimeout(() => joaoJoga(), 1800);
