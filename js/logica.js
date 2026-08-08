@@ -38,7 +38,7 @@ let quemJogaPrimeiro = 'jogador';
 let vezDeJogar = 'jogador';
 let podeJogar = true;
 let temporizadorEspera = null;
-const TEMPO_ESPERA = 180000; // ⏱️ 3 MINUTOS
+const TEMPO_ESPERA = 180000;
 const PONTOS_PARTIDA = 12;
 
 // ===== ELEMENTOS =====
@@ -201,7 +201,7 @@ function exibirCartasJoao() {
     });
 }
 
-// ===== ✅ VOCÊ JOGA — AGORA JOÃO VAI JOGAR TAMBÉM! =====
+// ===== VOCÊ JOGA =====
 function jogarCarta() {
     limparContagemEspera();
 
@@ -222,13 +222,13 @@ function jogarCarta() {
     document.getElementById('resultado-rodada').textContent = 
         `🃏 Você jogou ${cartaJogadaJogador.valor} de ${cartaJogadaJogador.naipe}`;
 
-    // ✅ FALTAVA ESSA LINHA: DIZ QUE AGORA É A VEZ DO JOÃO!
+    // ✅ AGORA É A VEZ DO JOÃO!
     vezDeJogar = 'joao';
 
     setTimeout(() => joaoJoga(), 1500);
 }
 
-// ===== JOÃO JOGA =====
+// ===== ✅ JOÃO JOGA — AGORA AVISA QUE VOLTA PARA VOCÊ! =====
 function joaoJoga() {
     if (vezDeJogar !== 'joao') return;
 
@@ -260,6 +260,9 @@ function joaoJoga() {
         `<span>${cartaJogadaJoao.valor}</span><span>${cartaJogadaJoao.naipe}</span>`;
     document.getElementById('resultado-rodada').textContent = 
         `🃏 João jogou ${cartaJogadaJoao.valor} de ${cartaJogadaJoao.naipe}`;
+
+    // ✅ FALTAVA ISSO! VOLTA A VEZ PARA VOCÊ ANTES DE VERIFICAR!
+    vezDeJogar = 'jogador';
 
     setTimeout(() => verificarVencedor(), 1200);
 }
@@ -302,6 +305,7 @@ function verificarVencedor() {
             return;
         }
 
+        // ✅ QUEM GANHA JOGA A PRÓXIMA
         vezDeJogar = vencedor;
         podeJogar = (vezDeJogar === 'jogador');
 
