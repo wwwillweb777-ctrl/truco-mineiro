@@ -166,7 +166,7 @@ function iniciarNovaRodada() {
 // ===== EXIBIR CARTAS =====
 function exibirCartasJogador() {
     const container = document.getElementById('suas-cartas');
-    container.innerHTML = ''; // ✅ LIMPA TUDO ANTES DE REDESENHAR
+    container.innerHTML = '';
     cartasJogador.forEach((carta, indice) => {
         if (!carta) return;
         
@@ -201,11 +201,10 @@ function exibirCartasJoao() {
     });
 }
 
-// ===== ✅ VOCÊ JOGA — CARTA SAI DAS MÃOS DE VERDADE! =====
+// ===== ✅ VOCÊ JOGA — AGORA JOÃO VAI JOGAR TAMBÉM! =====
 function jogarCarta() {
     limparContagemEspera();
 
-    // ✅ PROTEÇÃO: SÓ JOGA SE TIVER CARTA SELECIONADA
     if (cartaSelecionada === null || cartaSelecionada < 0 || cartaSelecionada >= cartasJogador.length) {
         document.getElementById('resultado-rodada').textContent = '⚠️ Selecione uma carta!';
         return;
@@ -213,20 +212,18 @@ function jogarCarta() {
 
     podeJogar = false;
 
-    // ✅ TIRA A CARTA DAS SUAS MÃOS PRIMEIRO
     cartaJogadaJogador = cartasJogador.splice(cartaSelecionada, 1)[0];
-    
-    // ✅ LIMPA A SELEÇÃO — NÃO DEIXA RASTRO
     cartaSelecionada = null;
 
-    // ✅ ATUALIZA SUAS CARTAS — JÁ SEM A CARTA JOGADA
     exibirCartasJogador();
 
-    // ✅ MOSTRA A CARTA NA MESA
     document.getElementById('carta-jogada-jogador').innerHTML = 
         `<span>${cartaJogadaJogador.valor}</span><span>${cartaJogadaJogador.naipe}</span>`;
     document.getElementById('resultado-rodada').textContent = 
         `🃏 Você jogou ${cartaJogadaJogador.valor} de ${cartaJogadaJogador.naipe}`;
+
+    // ✅ FALTAVA ESSA LINHA: DIZ QUE AGORA É A VEZ DO JOÃO!
+    vezDeJogar = 'joao';
 
     setTimeout(() => joaoJoga(), 1500);
 }
