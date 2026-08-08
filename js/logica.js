@@ -51,7 +51,7 @@ const avisoMatricula = document.getElementById('aviso-matricula');
 const meuIdMostrar = document.getElementById('meu-id');
 const botaoModoMaquina1x1 = document.getElementById('modo-maquina-1x1');
 
-// ===== LIMPAR MESA =====
+// ===== 🚩 NOVA REGRA: SÓ LIMPA MESA NO FIM DA RODADA =====
 function limparMesa() {
     document.getElementById('carta-jogada-jogador').innerHTML = '';
     document.getElementById('carta-jogada-joao').innerHTML = '';
@@ -138,7 +138,7 @@ function distribuirCartas() {
     vitoriasRodadaJoao = 0;
 }
 
-// ===== ✅ NOVA RODADA =====
+// ===== ✅ NOVA RODADA — MESA LIMPA SÓ AQUI =====
 function iniciarNovaRodada() {
     limparContagemEspera();
     cartaSelecionada = null;
@@ -149,7 +149,7 @@ function iniciarNovaRodada() {
     vezDeJogar = quemJogaPrimeiro;
     podeJogar = (vezDeJogar === 'jogador');
 
-    limparMesa(); // ✅ MESA TOTALMENTE LIMPA
+    limparMesa(); // ✅ SÓ LIMPA AQUI — FIM DA RODADA!
 
     if (vezDeJogar === 'jogador') {
         document.getElementById('resultado-rodada').textContent = '👉 SUA VEZ! Clique na carta!';
@@ -201,11 +201,10 @@ function exibirCartasJoao() {
     });
 }
 
-// ===== ✅ VOCÊ JOGA =====
+// ===== ✅ VOCÊ JOGA — SEM LIMPAR A MESA =====
 function jogarCarta() {
     limparContagemEspera();
     podeJogar = false;
-    limparMesa(); // ✅ LIMPA TUDO ANTES DE APARECER
 
     cartaJogadaJogador = cartasJogador.splice(cartaSelecionada, 1)[0];
     document.getElementById('carta-jogada-jogador').innerHTML = 
@@ -216,8 +215,13 @@ function jogarCarta() {
     setTimeout(() => joaoJoga(), 1500); // ✅ JOÃO SÓ JOGA DEPOIS DE VOCÊ
 }
 
-// ===== ✅ JOÃO JOGA =====
+// ===== ✅ JOÃO JOGA — SEM LIMPAR A MESA =====
 function joaoJoga() {
+    // ✅ SEGURANÇA: SÓ JOÃO JOGA SE FOR A VEZ DELE
+    if (vezDeJogar !== 'joao') {
+        return;
+    }
+
     let indiceEscolhido = -1;
 
     if (cartaJogadaJogador) {
@@ -242,7 +246,6 @@ function joaoJoga() {
         indiceEscolhido = cartasJoao.findIndex(c => c.forca === menorForca);
     }
 
-    limparMesa(); // ✅ LIMPA A MESA ANTES DE JOÃO JOGAR
     cartaJogadaJoao = cartasJoao.splice(indiceEscolhido, 1)[0];
     document.getElementById('carta-jogada-joao').innerHTML = 
         `<span>${cartaJogadaJoao.valor}</span><span>${cartaJogadaJoao.naipe}</span>`;
@@ -252,7 +255,7 @@ function joaoJoga() {
     setTimeout(() => verificarVencedor(), 1200);
 }
 
-// ===== ✅ VERIFICAR VENCEDOR E PASSAR A VEZ =====
+// ===== ✅ VERIFICAR VENCEDOR — MESA CONTINUA COM AS CARTAS! =====
 function verificarVencedor() {
     let vencedor;
 
@@ -274,7 +277,7 @@ function verificarVencedor() {
     }
 
     setTimeout(() => {
-        // ===== ✅ ALGUÉM FEZ 2 → RODADA ACABOU =====
+        // ===== ✅ ALGUÉM FEZ 2 → FIM DA RODADA! SÓ AGORA LIMPA! =====
         if (vitoriasRodadaJogador === 2) {
             pontosJogador += 2;
             document.getElementById('resultado-rodada').textContent = 
@@ -292,18 +295,18 @@ function verificarVencedor() {
             return;
         }
 
-        // ===== ✅ AINDA NÃO FEZ 2 → CONTINUA! MESA LIMPA E VEZ CORRETA =====
-        vezDeJogar = vencedor; // ✅ QUEM GANHOU JOGA A PRÓXIMA
+        // ===== ✅ AINDA NÃO FEZ 2 → CONTINUA! QUEM GANHA JOGA A PRÓXIMA =====
+        vezDeJogar = vencedor; // ✅ QUEM GANHOU JOGA A PRÓXIMA CARTA EM CIMA
         podeJogar = (vezDeJogar === 'jogador'); // ✅ LIBERA SE FOR SUA VEZ
 
-        limparMesa(); // ✅ MESA LIMPA COMPLETAMENTE PARA PRÓXIMA JOGADA
+        // ✅ A MESA NÃO É LIMPA! AS CARTAS FICAM LÁ!
 
         exibirCartasJogador();
         exibirCartasJoao();
 
         if (vezDeJogar === 'jogador') {
             document.getElementById('resultado-rodada').textContent += ' — SUA VEZ! Clique na carta!';
-            iniciarContagemEspera(); // ✅ INICIA A CONTAGEM DE 3 MINUTOS
+            iniciarContagemEspera();
         } else {
             document.getElementById('resultado-rodada').textContent += ' — João jogando...';
             setTimeout(() => joaoJoga(), 1800);
@@ -311,7 +314,7 @@ function verificarVencedor() {
     }, 2000);
 }
 
-// ===== FIM DA RODADA → NOVA RODADA =====
+// ===== FIM DA RODADA → NOVA RODADA COM MESA LIMPA =====
 function verificarFimPartida() {
     atualizarPlacar();
 
