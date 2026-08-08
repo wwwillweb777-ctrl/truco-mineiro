@@ -1,5 +1,5 @@
 // ==================================================
-// TRUCO MINEIRO — CORRIGIDO ✅ 3ª JOGADA SEM ERRO!
+// TRUCO MINEIRO — MESA LIMPA ✅ SEM ERRO NA 2ª JOGADA!
 // ==================================================
 
 // ===== VARIÁVEIS GERAIS =====
@@ -52,17 +52,14 @@ function calcularForca(valor, naipe) {
     return 0;
 }
 
-// ===== ✅ COMPARAR CARTAS — CORRIGIDO =====
+// ===== ✅ COMPARAR CARTAS =====
 function compararCartas(cartaA, cartaB) {
-    // ✅ VERIFICAÇÃO MELHORADA — NÃO DEIXA DAR ERRO!
-    if (!cartaA || !cartaB || !cartaA.valor || !cartaB.valor) {
-        return null;
-    }
+    if (!cartaA || !cartaB || !cartaA.valor || !cartaB.valor) return null;
     const forcaA = calcularForca(cartaA.valor, cartaA.naipe);
     const forcaB = calcularForca(cartaB.valor, cartaB.naipe);
     if (forcaA > forcaB) return 1;
     if (forcaA < forcaB) return -1;
-    return 0; // CANGOU
+    return 0;
 }
 
 // ===== ⏱️ TEMPO =====
@@ -76,7 +73,7 @@ function iniciarContagem() {
     temporizador = setTimeout(() => {
         if (vezDeJogar === 'jogador' && cartasJogador.length > 0) {
             pararTempo();
-            cartaSelecionada = 0; // ✅ SEMPRE JOGA A ÚLTIMA CARTA
+            cartaSelecionada = 0;
             jogarCarta();
         }
     }, TEMPO_ESPERA);
@@ -197,19 +194,18 @@ function iniciarNovaRodada() {
     exibirCartasJoao();
 }
 
-// ===== 🃏 VOCÊ JOGA — CORRIGIDO =====
+// ===== 🃏 VOCÊ JOGA =====
 function jogarCarta() {
     pararTempo();
     
-    // ✅ GARANTE QUE TEM CARTA NA MÃO
     if (cartasJogador.length === 0) {
         const r = document.getElementById('resultado-rodada');
         if (r) r.textContent = '⚠️ Você não tem mais cartas!';
         return;
     }
     
-    if (!podeJogar || cartaSelecionada === null || cartaSelecionada < 0 || cartaSelecionada >= cartasJogador.length) {
-        cartaSelecionada = 0; // ✅ SELECIONA A ÚNICA CARTA AUTOMATICAMENTE
+    if (cartaSelecionada === null || cartaSelecionada < 0 || cartaSelecionada >= cartasJogador.length) {
+        cartaSelecionada = 0;
     }
 
     podeJogar = false;
@@ -230,11 +226,9 @@ function jogarCarta() {
     setTimeout(() => joaoJoga(), 1500);
 }
 
-// ===== 🤖 JOÃO JOGA — CORRIGIDO NA 3ª CARTA! =====
+// ===== 🤖 JOÃO JOGA =====
 function joaoJoga() {
     if (vezDeJogar !== 'joao') return;
-    
-    // ✅ GARANTE QUE JOÃO TEM CARTA
     if (cartasJoao.length === 0) {
         const r = document.getElementById('resultado-rodada');
         if (r) r.textContent = '⚠️ João não tem mais cartas!';
@@ -243,12 +237,10 @@ function joaoJoga() {
 
     let indice = -1;
 
-    // JOGA PRIMEIRO → JOGA QUALQUER CARTA
     if (!cartaJogadaJogador) {
-        indice = 0; // ✅ JOGA A PRIMEIRA CARTA
+        indice = 0;
     }
     else {
-        // ✅ TENTA GANHAR
         let menorQueGanha = null;
         for (let i = 0; i < cartasJoao.length; i++) {
             if (cartasJoao[i].forca > cartaJogadaJogador.forca) {
@@ -258,16 +250,20 @@ function joaoJoga() {
                 }
             }
         }
-        // ✅ NÃO TEM → JOGA A MENOR
         if (indice === -1) {
-            let m = Math.min(...cartasJoao.map(c => c.forca));
-            indice = cartasJoao.findIndex(c => c.forca === m);
+            let menorForca = 999;
+            for (let i = 0; i < cartasJoao.length; i++) {
+                if (cartasJoao[i].forca < menorForca) {
+                    menorForca = cartasJoao[i].forca;
+                    indice = i;
+                }
+            }
         }
-        // ✅ SEGURANÇA: SE NÃO ACHOU, JOGA A ÚNICA CARTA
-        if (indice === -1) indice = 0;
+        if (indice === -1 || indice < 0 || indice >= cartasJoao.length) {
+            indice = 0;
+        }
     }
 
-    // ✅ RETIRA A CARTA COM SEGURANÇA
     cartaJogadaJoao = cartasJoao.splice(indice, 1)[0];
     exibirCartasJoao();
     
@@ -283,17 +279,16 @@ function joaoJoga() {
     setTimeout(() => verificarVencedor(), 1200);
 }
 
-// ===== ✅ VERIFICAR VENCEDOR — CORRIGIDO NA 3ª JOGADA! =====
+// ===== ✅ VERIFICAR VENCEDOR — MESA LIMPA ANTES DA PRÓXIMA! =====
 function verificarVencedor() {
     const comp = compararCartas(cartaJogadaJogador, cartaJogadaJoao);
     let vencedor;
     const r = document.getElementById('resultado-rodada');
 
-    // ✅ NÃO DEIXA DAR ERRO NA 3ª JOGADA!
+    // ✅ SE DER ERRO → LIMPA A MESA E JOGA NOVAMENTE
     if (comp === null) {
-        if (r) r.textContent = '⚠️ Erro! Reiniciando...';
-        limparMesa();
-        // ✅ QUEM JOGOU POR ÚLTIMO JOGA NOVAMENTE
+        if (r) r.textContent = '⚠️ Jogando novamente...';
+        limparMesa(); // ✅ LIMPA TUDO ANTES!
         if (vezDeJogar === 'jogador') { 
             podeJogar = true; 
             iniciarContagem(); 
@@ -312,10 +307,8 @@ function verificarVencedor() {
         vencedor = 'joao';
         if (r) r.textContent = `❌ JOÃO GANHOU ESSA! (${vitoriasRodadaJogador} x ${vitoriasRodadaJoao})`;
     } else {
-        // 🤝 CANGOU — QUEM JOGOU POR ÚLTIMO DESEMPATA
         vencedor = (vezDeJogar === 'jogador') ? 'joao' : 'jogador';
 
-        // ✅ 1 VITÓRIA + EMPATE = GANHA A RODADA
         if (vitoriasRodadaJogador === 1 && vitoriasRodadaJoao === 0) {
             setTimeout(() => {
                 pontosJogador += 2;
@@ -339,7 +332,7 @@ function verificarVencedor() {
     }
 
     setTimeout(() => {
-        // ✅ 2 VITÓRIAS → FECHA RODADA
+        // ✅ GANHOU 2 VEZES → RODADA ACABOU
         if (vitoriasRodadaJogador >= 2) {
             pontosJogador += 2;
             if (r) r.textContent = `🏆 VOCÊ GANHOU A RODADA! +2 PONTOS! → ${pontosJogador} x ${pontosJoao}`;
@@ -355,15 +348,13 @@ function verificarVencedor() {
             return;
         }
 
-        // ✅ 1x1 → VAI PARA 3ª E ÚLTIMA!
+        // ✅ 1x1 → VAI PARA 3ª
         if (vitoriasRodadaJogador === 1 && vitoriasRodadaJoao === 1) {
             if (r) r.textContent = `⚡ 3ª E ÚLTIMA! Quem ganhar leva!`;
-        } else {
-            if (r) r.textContent += ` — CONTINUA! Precisa de 2 vitórias!`;
         }
 
-        // ✅ LIMPA MESA E LIBERA A VEZ
-        limparMesa();
+        // ✅ LIMPA A MESA ANTES DE LIBERAR A PRÓXIMA JOGADA
+        limparMesa(); // 🔑 A CHAVE DO ERRO ESTAVA AQUI — AGORA LIMPA PRIMEIRO!
         vezDeJogar = vencedor;
 
         if (vezDeJogar === 'jogador') {
