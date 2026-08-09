@@ -1,9 +1,156 @@
-        <!-- ✅ TELA DO JOGO -- AGORA EXISTE! -->
-        <section id="tela-jogo" style="display:none;">
-            <h2>🃏 TRUCO MINEIRO — JOGO EM ANDAMENTO!</h2>
-            <div id="mensagem-jogo" style="background:rgba(255,255,255,0.1); padding:15px; border-radius:10px; text-align:center; font-weight:bold; color:#ffd700; margin-bottom:20px;">
-                Carregando...
-            </div>
-            <p style="text-align:center; color:#90caf9;">🎮 O jogo vai começar aqui em breve!</p>
-            <button onclick="location.reload()" style="background:#ef5350; color:white; margin-top:20px;">🔄 SAIR / VOLTAR</button>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Truco Mineiro Online 🎲</title>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyATcfKpiac2DKdSjafq-NwAnuMBnxD9VBE",
+      authDomain: "truco-mineiro-1df23.firebaseapp.com",
+      databaseURL: "https://truco-mineiro-1df23-default-rtdb.firebaseio.com",
+      projectId: "truco-mineiro-1df23",
+      storageBucket: "truco-mineiro-1df23.firebasestorage.app",
+      messagingSenderId: "597079073519",
+      appId: "1:597079073519:web:fe3f4719ebfe3542d7711a"
+    };
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    </script>
+
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; font-family:Arial,sans-serif; }
+        body { background:linear-gradient(135deg,#1a3760,#0f2040); min-height:100vh; color:white; padding:15px; }
+        header { text-align:center; padding:20px; background:rgba(0,0,0,.25); border-radius:16px; margin-bottom:25px; }
+        h1 { color:#ffd700; font-size:2.2em; margin-bottom:8px; }
+        h2 { color:#ffd700; text-align:center; margin-bottom:20px; }
+        p { color:#d0d0d0; text-align:center; }
+        main { max-width:500px; margin:0 auto; }
+        section { background:rgba(25,50,90,.85); border-radius:16px; padding:25px 20px; margin-bottom:20px; }
+        input { width:100%; padding:14px; font-size:1.1em; border:none; border-radius:10px; margin-bottom:15px; color:#223; }
+        button { width:100%; padding:14px; font-size:1.1em; font-weight:bold; border:none; border-radius:10px; cursor:pointer; margin:5px 0; }
+        .btn-verde { background:linear-gradient(180deg,#28c748,#1ea338); color:white; }
+        .btn-azul { background:linear-gradient(180deg,#42a5f5,#1976d2); color:white; }
+        .btn-cinza { background:linear-gradient(180deg,#78909c,#455a64); color:white; }
+        .sala-minha { border:3px solid #ff9800; padding:15px; margin:10px; border-radius:8px; background:#2a2a2a; }
+        .sala-outra { border:3px solid #4CAF50; padding:15px; margin:10px; border-radius:8px; background:#1a1a1a; cursor:pointer; }
+        .escondido { display:none !important; }
+        .mensagem { background:rgba(255,255,255,.1); padding:15px; border-radius:10px; text-align:center; font-weight:bold; color:#ffd700; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🎲 TRUCO MINEIRO ONLINE</h1>
+        <p>Veja quem está jogando, escolha seu adversário e entre!</p>
+    </header>
+
+    <main>
+        <!-- TELA MATRÍCULA -->
+        <section id="tela-matricula">
+            <h2>📝 DIGITE SEU NOME</h2>
+            <input type="text" id="campo-nome" placeholder="Seu nome aqui...">
+            <button id="botao-entrar" class="btn-verde">✅ ENTRAR</button>
         </section>
+
+        <!-- TELA SALAS -->
+        <section id="tela-salas" class="escondido">
+            <h2>🟢 SALAS ONLINE</h2>
+            <p>Clique em uma sala para entrar!</p>
+            <div id="lista-salas"></div>
+            <button id="botao-criar" class="btn-azul">➕ CRIAR MINHA SALA</button>
+        </section>
+
+        <!-- TELA JOGO -->
+        <section id="tela-jogo" class="escondido">
+            <h2>🃏 JOGO COMEÇOU!</h2>
+            <div id="caixa-mensagem" class="mensagem"></div>
+            <button onclick="voltarSalas()" class="btn-cinza" style="margin-top:20px;">🔄 VOLTAR ÀS SALAS</button>
+        </section>
+    </main>
+
+    <script>
+        let proximoIdJogador = 1000;
+        let proximoIdSala = 5000;
+        let jogadorAtual = { id: null, nome: null };
+
+        function voltarSalas() {
+            document.getElementById('tela-jogo').classList.add('escondido');
+            document.getElementById('tela-salas').classList.remove('escondido');
+        }
+
+        function carregarSalas() {
+            const lista = document.getElementById('lista-salas');
+            db.ref('salas/').on('value', (snap) => {
+                lista.innerHTML = '';
+                const dados = snap.val();
+                if (!dados) {
+                    lista.innerHTML = '<p style="color:#90caf9; padding:20px;">Ninguém criou sala ainda.</p>';
+                    return;
+                }
+                Object.values(dados).forEach(sala => {
+                    if (sala.ocupada) return;
+                    const div = document.createElement('div');
+                    if (sala.jogadorId === jogadorAtual.id) {
+                        div.className = 'sala-minha';
+                        div.innerHTML = `
+                            <div style="font-weight:bold; font-size:18px;">🆔 Sala #${sala.id}</div>
+                            <div>👤 Você: ${sala.nome}</div>
+                            <div style="color:orange; margin-top:8px;">⏳ Aguardando alguém entrar...</div>
+                        `;
+                    } else {
+                        div.className = 'sala-outra';
+                        div.innerHTML = `
+                            <div style="font-weight:bold; font-size:18px;">🆔 Sala #${sala.id}</div>
+                            <div>👤 Quer jogar: ${sala.nome}</div>
+                            <div style="color:lightgreen; margin-top:8px;">✅ CLIQUE AQUI PARA ENTRAR!</div>
+                        `;
+                        div.onclick = () => entrarNaSala(sala);
+                    }
+                    lista.appendChild(div);
+                });
+            });
+        }
+
+        async function criarSala() {
+            if (!jogadorAtual.nome) { alert('⚠️ Digite seu nome primeiro!'); return; }
+            const nova = {
+                id: proximoIdSala++,
+                jogadorId: jogadorAtual.id,
+                nome: jogadorAtual.nome,
+                ocupada: false
+            };
+            await db.ref('salas/' + nova.id).set(nova);
+            alert(`✅ SALA CRIADA!\n\nCompartilhe o link com seu adversário!`);
+        }
+
+        async function entrarNaSala(sala) {
+            if (sala.jogadorId === jogadorAtual.id) {
+                alert('⚠️ É a sua sala! Espere alguém entrar!');
+                return;
+            }
+            await db.ref('salas/' + sala.id).update({ ocupada: true });
+            document.getElementById('tela-salas').classList.add('escondido');
+            document.getElementById('tela-jogo').classList.remove('escondido');
+            document.getElementById('caixa-mensagem').innerHTML = `✅ VOCÊ ENTROU!<br><br>Adversário: ${sala.nome}<br><br>🎮 Jogo vai começar!`;
+        }
+
+        // BOTÕES
+        document.getElementById('botao-entrar').onclick = () => {
+            const nome = document.getElementById('campo-nome').value.trim();
+            if (!nome) { alert('⚠️ Digite seu nome!'); return; }
+            jogadorAtual.id = proximoIdJogador++;
+            jogadorAtual.nome = nome;
+            alert(`✅ BEM-VINDO, ${nome}!`);
+            document.getElementById('tela-matricula').classList.add('escondido');
+            document.getElementById('tela-salas').classList.remove('escondido');
+            carregarSalas();
+        };
+
+        document.getElementById('botao-criar').onclick = criarSala;
+    </script>
+</body>
+</html>
