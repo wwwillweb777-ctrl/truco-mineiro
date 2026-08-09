@@ -1,16 +1,16 @@
 // ==================================================
-// TRUCO MINEIRO — ✅ SALAS ONLINE! ENTRA E SALA DESAPARECE!
+// TRUCO MINEIRO — ✅ SALAS COM PESSOAS REAIS + FILA DE ESPERA!
 // ==================================================
 
-// ===== CONTADOR DE ID ÚNICO =====
+// ===== CONTADORES =====
 let proximoIdJogador = 1000;
 let proximoIdSala = 5000;
 
-// ===== DADOS DO JOGADOR =====
+// ===== DADOS =====
 let jogadorAtual = { id: null, nome: null, dupla: null };
 let salaSelecionada = null;
+let filaDeEspera = []; // Próximos a jogar
 
-// ===== PLACAR E JOGO =====
 let pontosDupla1 = 0;
 let pontosDupla2 = 0;
 let baralho = [];
@@ -23,12 +23,8 @@ let vezDeJogador = 1;
 
 const PONTOS_PARTIDA = 12;
 
-// ===== 📋 SALAS ONLINE — SIMULADAS =====
-let salasOnline = [
-    { id: 5001, criadorId: 1001, nomeCriador: 'João', jogadores: [{id: 1001, nome: 'João'}], max: 2 },
-    { id: 5002, criadorId: 1002, nomeCriador: 'Maria', jogadores: [{id: 1002, nome: 'Maria'}], max: 2 },
-    { id: 5003, criadorId: 1003, nomeCriador: 'Pedro', jogadores: [{id: 1003, nome: 'Pedro'}], max: 2 }
-];
+// ===== SALAS — SOMENTE PESSOAS REAIS =====
+let salasOnline = []; // Começa VAZIO — só quem se cadastrar aparece!
 
 // ===== VALORES E NAIPES =====
 const valores = ['4', '5', '6', '7', 'Q', 'J', 'K', 'A', '2', '3'];
@@ -94,23 +90,28 @@ function limparMesa() {
     if (mesa) mesa.innerHTML = '';
 }
 
-// ===== 💬 ATUALIZAR MENSAGEM =====
+// ===== 💬 MENSAGEM =====
 function atualizarMensagem() {
     const r = document.getElementById('resultado-rodada');
-    if (!r) return;
+    if (!r || !salaSelecionada) return;
 
     const nomeVez = vezDeJogador === 1 
         ? jogadorAtual.nome.toUpperCase() 
-        : salaSelecionada.nomeCriador.toUpperCase();
+        : salaSelecionada.criadorNome.toUpperCase();
     
     r.textContent = `👉 VEZ DE ${nomeVez} — Clique em uma carta!`;
 }
 
-// ===== 📋 CARREGAR SALAS NA TELA =====
+// ===== 📋 CARREGAR SALAS — MOSTRA QUEM ESTÁ ESPERANDO =====
 function carregarSalasOnline() {
     const lista = document.getElementById('lista-salas');
     if (!lista) return;
     lista.innerHTML = '';
+
+    if (salasOnline.length === 0) {
+        lista.innerHTML = '<p style="text-align:center; color:#90caf9; padding:20px;">Ninguém está esperando. Crie sua sala abaixo!</p>';
+        return;
+    }
 
     salasOnline.forEach(sala => {
         const div = document.createElement('div');
@@ -119,8 +120,8 @@ function carregarSalasOnline() {
             <div class="sala-cabecalho">
                 <span class="sala-id">🆔 Sala #${sala.id}</span>
             </div>
-            <div class="sala-dono">👤 Quer jogar: ${sala.nomeCriador} (#${sala.criadorId})</div>
-            <div class="sala-quantidade">Aguardando adversário...</div>
+            <div class="sala-dono">👤 Quer jogar: ${sala.criadorNome} (#${sala.criadorId})</div>
+            <div class="sala-quantidade">⏳ Aguardando adversário...</div>
             <button class="botao-entrar-sala">✅ ENTRAR E JOGAR</button>
         `;
         div.onclick = () => entrarNaSala(sala);
@@ -128,25 +129,59 @@ function carregarSalasOnline() {
     });
 }
 
-// ===== 🚪 ENTRAR NA SALA — SALA DESAPARECE! =====
+// ===== 🚪 ENTRAR NA SALA — SALA DESAPARECE E VAI PRA FILA =====
 function entrarNaSala(sala) {
     if (!jogadorAtual.id || !jogadorAtual.nome) {
-        alert('⚠️ Digite seu nome primeiro!');
+        alert('⚠️ Primeiro digite seu nome!');
         return;
     }
 
-    // ✅ REMOVE A SALA DA LISTA → DESAPARECE!
+    if (sala.criadorId === jogadorAtual.id) {
+        alert('⚠️ Você não pode jogar contra você mesmo!');
+        return;
+    }
+
+    // ✅ REMOVE A SALA DA LISTA → DESAPARECE DE FORA!
     salasOnline = salasOnline.filter(s => s.id !== sala.id);
     salaSelecionada = sala;
 
-    alert(`✅ VOCÊ ENTROU NA SALA!\n\n🆔 Sala #${sala.id}\n👤 Adversário: ${sala.nomeCriador}\n\nAgora escolha sua dupla!`);
+    alert(`✅ VOCÊ ENTROU!\n\n🆔 Sala #${sala.id}\n👤 Adversário: ${sala.criadorNome}\n\nAgora escolha sua dupla!`);
 
-    // Vai escolher dupla
     document.getElementById('tela-sala').style.display = 'none';
     document.getElementById('tela-dupla').style.display = 'block';
 }
 
-// ===== 🎮 ESCOLHER DUPLA E COMEÇAR =====
+// ➕ CRIAR MINHA SALA
+const botaoCriarSala = document.getElementById('criar-sala');
+if (botaoCriarSala) {
+    botaoCriarSala.addEventListener('click', () => {
+        if (!jogadorAtual.id || !jogadorAtual.nome) {
+            alert('⚠️ Digite seu nome primeiro!');
+            return;
+        }
+
+        // Verifica se já tem sala aberta
+        const jaTem = salasOnline.find(s => s.criadorId === jogadorAtual.id);
+        if (jaTem) {
+            alert('⚠️ Você já está esperando em uma sala!');
+            return;
+        }
+
+        // ✅ CRIA SALA COM SEU NOME REAL
+        const novaSala = {
+            id: proximoIdSala++,
+            criadorId: jogadorAtual.id,
+            criadorNome: jogadorAtual.nome,
+            max: 2
+        };
+        salasOnline.push(novaSala);
+
+        alert(`✅ SALA CRIADA!\n\n👤 Você: ${jogadorAtual.nome}\n🆔 Sua Sala: #${novaSala.id}\n\nAguarde alguém entrar...`);
+        carregarSalasOnline();
+    });
+}
+
+// ===== 🎮 ESCOLHER DUPLA =====
 function escolherDupla(numeroDupla) {
     jogadorAtual.dupla = numeroDupla;
     pontosDupla1 = 0;
@@ -163,8 +198,8 @@ function escolherDupla(numeroDupla) {
 function iniciarNovaRodada() {
     criarBaralho();
     maosJogadores = [
-        baralho.splice(0, 3),  // Jogador 1
-        baralho.splice(0, 3)   // Jogador 2
+        baralho.splice(0, 3),  // Jogador 1 = quem entrou
+        baralho.splice(0, 3)   // Jogador 2 = quem criou a sala
     ];
     
     vitoriasRodadaDupla1 = 0;
@@ -183,20 +218,20 @@ function exibirCartas() {
     container.innerHTML = '';
 
     const indice = vezDeJogador - 1;
-    let nomeVez = indice === 0 ? jogadorAtual.nome : salaSelecionada.nomeCriador;
+    const nomeVez = indice === 0 ? jogadorAtual.nome : salaSelecionada.criadorNome;
 
-    if (!maosJogadores[indice] || maosJogadores[indice].length === 0) {
-        container.innerHTML = `<p>✅ ${nomeVez} não tem mais cartas!</p>`;
-        return;
-    }
-
-    // Se for a vez do adversário → avisa
+    // Vez do adversário
     if (indice === 1) {
-        container.innerHTML = `<p>⏳ VEZ DE ${nomeVez.toUpperCase()} — é a vez dele jogar!</p>`;
+        container.innerHTML = `<p style="text-align:center; color:#90caf9; padding:20px;">⏳ VEZ DE ${nomeVez.toUpperCase()} — aguarde ele jogar...</p>`;
         return;
     }
 
-    // Mostra suas cartas
+    // Suas cartas
+    if (!maosJogadores[indice] || maosJogadores[indice].length === 0) {
+        container.innerHTML = `<p>✅ Você não tem mais cartas!</p>`;
+        return;
+    }
+
     maosJogadores[indice].forEach((carta, i) => {
         const div = document.createElement('div');
         div.className = 'carta';
@@ -219,33 +254,29 @@ function jogarCarta(indiceJogador, indiceCarta) {
         mesa.appendChild(div);
     }
 
-    // Se os dois jogaram → compara!
-    if (cartaJogadaMesa.length === 2) {
-        setTimeout(() => verificarVencedor(), 1000);
-    } else {
-        // Passa a vez
-        vezDeJogador = 2;
-        atualizarMensagem();
-        exibirCartas();
-        
-        // SIMULA ADVERSÁRIO JOGANDO (no mesmo aparelho)
-        setTimeout(() => {
-            const idxAdversario = 1;
-            if (maosJogadores[idxAdversario].length > 0) {
-                const cartaAdversario = maosJogadores[idxAdversario].splice(0, 1)[0];
-                cartaJogadaMesa.push({ jogador: 2, carta: cartaAdversario });
-                
-                const m = document.getElementById('mesa-cartas');
-                if (m) {
-                    const d = document.createElement('div');
-                    d.className = 'carta-jogada';
-                    d.innerHTML = `<span>${cartaAdversario.valor}</span><span>${cartaAdversario.naipe}</span>`;
-                    m.appendChild(d);
-                }
-                setTimeout(() => verificarVencedor(), 1000);
+    // Passa a vez
+    vezDeJogador = 2;
+    atualizarMensagem();
+    exibirCartas();
+
+    // SIMULA ADVERSÁRIO JOGANDO (no mesmo aparelho)
+    setTimeout(() => {
+        const idxAdv = 1;
+        if (maosJogadores[idxAdv].length > 0) {
+            const idxCartaAdv = Math.floor(Math.random() * maosJogadores[idxAdv].length);
+            const cartaAdv = maosJogadores[idxAdv].splice(idxCartaAdv, 1)[0];
+            cartaJogadaMesa.push({ jogador: 2, carta: cartaAdv });
+
+            const m = document.getElementById('mesa-cartas');
+            if (m) {
+                const d = document.createElement('div');
+                d.className = 'carta-jogada';
+                d.innerHTML = `<span>${cartaAdv.valor}</span><span>${cartaAdv.naipe}</span>`;
+                m.appendChild(d);
             }
-        }, 2000);
-    }
+            setTimeout(() => verificarVencedor(), 1000);
+        }
+    }, 2000);
 }
 
 // ===== 🏆 VERIFICAR VENCEDOR =====
@@ -264,23 +295,23 @@ function verificarVencedor() {
     } else if (comp === -1) {
         vencedor = 2;
         vitoriasRodadaDupla2++;
-        r.textContent = `✅ ${salaSelecionada.nomeCriador} GANHOU ESSA! (${vitoriasRodadaDupla1} x ${vitoriasRodadaDupla2})`;
+        r.textContent = `✅ ${salaSelecionada.criadorNome} GANHOU ESSA! (${vitoriasRodadaDupla1} x ${vitoriasRodadaDupla2})`;
     } else {
         vencedor = 2;
-        r.textContent = `🤝 CANGOU! ${salaSelecionada.nomeCriador} joga de novo!`;
+        r.textContent = `🤝 CANGOU! ${salaSelecionada.criadorNome} joga de novo!`;
     }
 
     setTimeout(() => {
         if (vitoriasRodadaDupla1 >= 2) {
             pontosDupla1 += 2;
-            r.textContent = `🏆 VOCÊ GANHOU A RODADA! +2 PONTOS!`;
+            r.textContent = `🏆 ${jogadorAtual.nome} GANHOU A RODADA! +2 PONTOS!`;
             quemJogaPrimeiro = 1;
             verificarFimPartida();
             return;
         }
         if (vitoriasRodadaDupla2 >= 2) {
             pontosDupla2 += 2;
-            r.textContent = `🏆 ${salaSelecionada.nomeCriador} GANHOU A RODADA! +2 PONTOS!`;
+            r.textContent = `🏆 ${salaSelecionada.criadorNome} GANHOU A RODADA! +2 PONTOS!`;
             quemJogaPrimeiro = 2;
             verificarFimPartida();
             return;
@@ -294,16 +325,44 @@ function verificarVencedor() {
     }, 2000);
 }
 
-// ===== 🏁 FIM DE PARTIDA =====
+// ===== 🏁 FIM DE PARTIDA → PRÓXIMO ENTRA! =====
 function verificarFimPartida() {
     atualizarPlacar();
-    if (pontosDupla1 >= PONTOS_PARTIDA) {
-        alert(`🎉 VOCÊ GANHOU O JOGO!\n\nPLACAR:\nVOCÊ: ${pontosDupla1}\n${salaSelecionada.nomeCriador}: ${pontosDupla2}`);
-    } else if (pontosDupla2 >= PONTOS_PARTIDA) {
-        alert(`😔 ${salaSelecionada.nomeCriador} GANHOU O JOGO!\n\nPLACAR:\nVOCÊ: ${pontosDupla1}\n${salaSelecionada.nomeCriador}: ${pontosDupla2}`);
-    } else {
-        setTimeout(() => iniciarNovaRodada(), 2500);
+    
+    if (pontosDupla1 >= PONTOS_PARTIDA || pontosDupla2 >= PONTOS_PARTIDA) {
+        let mensagem;
+        if (pontosDupla1 >= PONTOS_PARTIDA) {
+            mensagem = `🎉 ${jogadorAtual.nome.toUpperCase()} GANHOU O JOGO!\n\nPLACAR:\n${jogadorAtual.nome}: ${pontosDupla1}\n${salaSelecionada.criadorNome}: ${pontosDupla2}`;
+        } else {
+            mensagem = `🎉 ${salaSelecionada.criadorNome.toUpperCase()} GANHOU O JOGO!\n\nPLACAR:\n${jogadorAtual.nome}: ${pontosDupla1}\n${salaSelecionada.criadorNome}: ${pontosDupla2}`;
+        }
+
+        // ✅ QUANDO TERMINAR → VOLTA PRA SALA E PRÓXIMO PODE ENTRAR!
+        setTimeout(() => {
+            alert(mensagem + '\n\n✅ A partida terminou! Volte para escolher novo adversário!');
+            
+            // Volta pra tela de salas
+            document.getElementById('tela-jogo').style.display = 'none';
+            document.getElementById('tela-dupla').style.display = 'none';
+            document.getElementById('tela-sala').style.display = 'block';
+
+            // Quem criou a sala VOLTA a ficar disponível
+            salasOnline.push({
+                id: salaSelecionada.id,
+                criadorId: salaSelecionada.criadorId,
+                criadorNome: salaSelecionada.criadorNome,
+                max: 2
+            });
+
+            salaSelecionada = null;
+            pontosDupla1 = pontosDupla2 = 0;
+            
+            carregarSalasOnline();
+        }, 1500);
+        return;
     }
+
+    setTimeout(() => iniciarNovaRodada(), 2500);
 }
 
 // ===== 🔘 BOTÃO MATRICULAR =====
@@ -316,14 +375,14 @@ if (botaoEntrar) {
     botaoEntrar.addEventListener('click', () => {
         const nome = campoNome.value.trim();
         if (!nome) {
-            alert('⚠️ Digite seu nome!');
+            alert('⚠️ Digite seu nome real!');
             return;
         }
 
         jogadorAtual.id = proximoIdJogador++;
         jogadorAtual.nome = nome;
 
-        alert(`✅ BEM-VINDO, ${nome}!\n\n🆔 Seu ID: #${jogadorAtual.id}\n\nEscolha uma sala abaixo!`);
+        alert(`✅ BEM-VINDO, ${nome}!\n\n🆔 Seu ID: #${jogadorAtual.id}\n\nVeja quem está esperando ou crie sua sala!`);
 
         if (telaMatricula) telaMatricula.style.display = 'none';
         if (telaSala) telaSala.style.display = 'block';
@@ -331,25 +390,27 @@ if (botaoEntrar) {
     });
 }
 
-// ===== ✅ BOTÃO SAIR — FUNCIONANDO! =====
+// ===== ✅ BOTÃO SAIR =====
 const botaoSair = document.getElementById('botao-sair');
 if (botaoSair) {
     botaoSair.addEventListener('click', () => {
         if (confirm('🚪 Tem certeza que deseja sair?')) {
+            // Se estava jogando, devolve a sala
+            if (salaSelecionada) {
+                salasOnline.push({
+                    id: salaSelecionada.id,
+                    criadorId: salaSelecionada.criadorId,
+                    criadorNome: salaSelecionada.criadorNome,
+                    max: 2
+                });
+            }
+
             // Reseta tudo
             jogadorAtual = { id: null, nome: null, dupla: null };
             salaSelecionada = null;
-            pontosDupla1 = 0;
-            pontosDupla2 = 0;
-            
-            // Volta salas que foram removidas
-            salasOnline = [
-                { id: 5001, criadorId: 1001, nomeCriador: 'João', jogadores: [{id: 1001, nome: 'João'}], max: 2 },
-                { id: 5002, criadorId: 1002, nomeCriador: 'Maria', jogadores: [{id: 1002, nome: 'Maria'}], max: 2 },
-                { id: 5003, criadorId: 1003, nomeCriador: 'Pedro', jogadores: [{id: 1003, nome: 'Pedro'}], max: 2 }
-            ];
+            pontosDupla1 = pontosDupla2 = 0;
 
-            // Volta para tela inicial
+            // Volta pra tela inicial
             document.getElementById('tela-jogo').style.display = 'none';
             document.getElementById('tela-dupla').style.display = 'none';
             document.getElementById('tela-sala').style.display = 'none';
