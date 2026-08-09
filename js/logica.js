@@ -1,11 +1,11 @@
 document.addEventListener('DOMContentLoaded', function() {
     const db = firebase.database();
-
     let proximoIdJogador = 1000;
     let proximoIdSala = 5000;
     let jogadorAtual = { id: null, nome: null };
-    let salaCriadaPorMim = null;
+    let salaSelecionada = null;
 
+    // ===== MOSTRAR SALAS =====
     function carregarSalasOnline() {
         const lista = document.getElementById('lista-salas');
         if (!lista) return;
@@ -15,30 +15,28 @@ document.addEventListener('DOMContentLoaded', function() {
             const dados = snapshot.val();
 
             if (!dados) {
-                lista.innerHTML = '<p style="text-align:center; color:#90caf9; padding:20px;">Ninguém está esperando. Crie sua sala!</p>';
+                lista.innerHTML = '<p style="text-align:center; color:#90caf9; padding:20px;">Ninguém criou sala ainda. Crie a sua!</p>';
                 return;
             }
 
             Object.values(dados).forEach(sala => {
                 if (!sala.ocupada) {
                     const div = document.createElement('div');
-                    div.style = "border:2px solid #4CAF50; padding:15px; margin:10px; border-radius:8px; background:#1a1a1a; color:white;";
                     
                     if (sala.jogadorId === jogadorAtual.id) {
-                        div.style.borderColor = '#ff9800';
-                        div.style.cursor = 'default';
+                        div.style = "border:3px solid #ff9800; padding:15px; margin:10px; border-radius:8px; background:#2a2a2a; color:white;";
                         div.innerHTML = `
                             <div style="font-weight:bold; font-size:18px;">🆔 Sala #${sala.id}</div>
                             <div>👤 Você: ${sala.nome}</div>
-                            <div style="color:orange; margin-top:8px;">⏳ Aguardando adversário...</div>
-                            <div style="color:gray; margin-top:5px;">— ESPERE ALGUÉM ENTRAR —</div>
+                            <div style="color:orange; margin-top:8px;">⏳ Aguardando alguém entrar...</div>
+                            <div style="color:#ff6b6b; margin-top:5px;">❌ COMPARTILHE O LINK COM QUEM VAI JOGAR!</div>
                         `;
                     } else {
-                        div.style.cursor = 'pointer';
+                        div.style = "border:3px solid #4CAF50; padding:15px; margin:10px; border-radius:8px; background:#1a1a1a; color:white; cursor:pointer;";
                         div.innerHTML = `
                             <div style="font-weight:bold; font-size:18px;">🆔 Sala #${sala.id}</div>
                             <div>👤 Quer jogar: ${sala.nome}</div>
-                            <div style="color:lightgreen; margin-top:8px;">⏳ Aguardando adversário...</div>
+                            <div style="color:lightgreen; margin-top:8px;">⏳ Aguardando...</div>
                             <div style="color:lightgreen; font-weight:bold; margin-top:10px;">✅ CLIQUE AQUI PARA ENTRAR!</div>
                         `;
                         div.onclick = () => entrarNaSala(sala);
@@ -49,13 +47,10 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // ===== CRIAR SALA =====
     async function criarSala() {
         if (!jogadorAtual.id || !jogadorAtual.nome) {
             alert('⚠️ Digite seu nome primeiro!');
-            return;
-        }
-        if (salaCriadaPorMim) {
-            alert('⚠️ Você já tem uma sala aberta! Espere alguém entrar!');
             return;
         }
 
@@ -67,21 +62,35 @@ document.addEventListener('DOMContentLoaded', function() {
         };
 
         await db.ref('salas/' + novaSala.id).set(novaSala);
-        salaCriadaPorMim = novaSala;
-        alert(`✅ SALA CRIADA!\n\n🆔 Sala #${novaSala.id}\n👤 ${novaSala.nome}\n\n🔄 Compartilhe o link!`);
+        alert(`✅ SALA CRIADA!\n\n🆔 Sala #${novaSala.id}\n👤 ${novaSala.nome}\n\n🔄 COMPARTILHE O LINK COM SEU ADVERSÁRIO!`);
     }
 
+    // ===== ✅ ENTRAR NA SALA — AGORA VAI PRA TELA DO JOGO! =====
     async function entrarNaSala(sala) {
         if (sala.jogadorId === jogadorAtual.id) {
-            alert('⚠️ É a sua sala! Espere alguém entrar!');
+            alert('⚠️ Esta é a SUA sala!\n\nEspere alguém entrar ou compartilhe o link!');
             return;
         }
+
+        // ✅ MARCA A SALA COMO OCUPADA
         await db.ref('salas/' + sala.id).update({ ocupada: true });
-        alert(`✅ VOCÊ ENTROU!\n\n🆔 Sala #${sala.id}\n👤 Adversário: ${sala.nome}`);
+        salaSelecionada = sala;
+
+        alert(`✅ VOCÊ ENTROU!\n\n🆔 Sala #${sala.id}\n👤 Adversário: ${sala.nome}\n\n🎮 INICIANDO O JOGO...`);
+
+        // ✅ ESCONDE TELA DE SALAS → MOSTRA TELA DO JOGO
         document.getElementById('tela-salas').style.display = 'none';
-        document.getElementById('tela-dupla').style.display = 'block';
+        document.getElementById('tela-jogo').style.display = 'block';
+
+        // ✅ QUEM CRIOU A SALA JOGARÁ PRIMEIRO
+        if (sala.jogadorId === jogadorAtual.id) {
+            document.getElementById('mensagem-jogo').innerHTML = `🎮 Olá ${jogadorAtual.nome}! Você começa jogando!`;
+        } else {
+            document.getElementById('mensagem-jogo').innerHTML = `🎮 Você entrou! Seu adversário é ${sala.nome}! Ele começa jogando!`;
+        }
     }
 
+    // ===== BOTÕES =====
     const botaoCriarSala = document.getElementById('criar-sala');
     const botaoMatricular = document.getElementById('botao-matricular');
     const campoNome = document.getElementById('campo-nome');
