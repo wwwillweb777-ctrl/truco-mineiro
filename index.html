@@ -1,88 +1,18 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Truco Mineiro Online 🎲</title>
-    <link rel="stylesheet" href="css/estilo.css">
-</head>
-<body>
+<!-- ===== FIREBASE CONECTADO ===== -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 
-    <header>
-        <h1>🎲 TRUCO MINEIRO ONLINE</h1>
-        <p>Veja quem está jogando, escolha seu parceiro e entre!</p>
-    </header>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyATcfKpiac2DKdSjafq-NwAnuMBnxD9VBE",
+  authDomain: "truco-mineiro-1df23.firebaseapp.com",
+  databaseURL: "https://truco-mineiro-1df23-default-rtdb.firebaseio.com",
+  projectId: "truco-mineiro-1df23",
+  storageBucket: "truco-mineiro-1df23.firebasestorage.app",
+  messagingSenderId: "597079073519",
+  appId: "1:597079073519:web:fe3f4719ebfe3542d7711a"
+};
 
-    <main>
-        <!-- ====================================== -->
-        <!-- TELA 1: MATRÍCULA                     -->
-        <!-- ====================================== -->
-        <section id="tela-matricula" class="tela-ativa">
-            <h2>📝 MATRICULE-SE PARA JOGAR</h2>
-            <input type="text" id="campo-nome" placeholder="Digite seu nome..." autocomplete="off">
-            <button id="botao-entrar">✅ MATRICULAR-SE</button>
-            <p class="aviso">🆔 Você receberá um ID único automaticamente</p>
-        </section>
-
-        <!-- ====================================== -->
-        <!-- TELA 2: SALAS ONLINE                  -->
-        <!-- ====================================== -->
-        <section id="tela-sala" class="tela-escondida">
-            <h2>🟢 SALAS ONLINE</h2>
-            <p class="subtitulo">Clique em uma sala para entrar e jogar!</p>
-            <div id="lista-salas"></div>
-            <button id="criar-sala">➕ CRIAR MINHA SALA</button>
-        </section>
-
-        <!-- ====================================== -->
-        <!-- TELA 3: ESCOLHER DUPLA                -->
-        <!-- ====================================== -->
-        <section id="tela-dupla" class="tela-escondida">
-            <h2>🤝 ESCOLHA SUA DUPLA</h2>
-            <p class="subtitulo">Com quem você vai jogar?</p>
-            <div class="botoes-dupla">
-                <button onclick="escolherDupla(1)">🔵 DUPLA 1</button>
-                <button onclick="escolherDupla(2)">🔴 DUPLA 2</button>
-            </div>
-        </section>
-
-        <!-- ====================================== -->
-        <!-- TELA 4: JOGO                          -->
-        <!-- ====================================== -->
-        <section id="tela-jogo" class="tela-escondida">
-            <!-- PLACAR -->
-            <div class="placar">
-                <div class="time dupla1">
-                    <h3>🔵 DUPLA 1</h3>
-                    <div class="pontos" id="pontos-dupla1">0</div>
-                </div>
-                <div class="versus">VS</div>
-                <div class="time dupla2">
-                    <h3>🔴 DUPLA 2</h3>
-                    <div class="pontos" id="pontos-dupla2">0</div>
-                </div>
-            </div>
-
-            <!-- MENSAGEM -->
-            <div id="resultado-rodada" class="mensagem">👉 Sua vez! Clique em uma carta!</div>
-
-            <!-- MESA -->
-            <h3>🃏 MESA</h3>
-            <div id="mesa-cartas" class="mesa-cartas"></div>
-
-            <!-- SUAS CARTAS -->
-            <h3>✋ SUAS CARTAS</h3>
-            <div id="cartas-jogador" class="cartas-jogador"></div>
-
-            <!-- BOTÕES -->
-            <div class="botoes-jogo">
-                <button id="botao-sair" class="botao-sair">🚪 SAIR</button>
-            </div>
-        </section>
-
-    </main>
-
-    <!-- ✅ JÁ CORRIGIDO: APONTA PARA O ARQUIVO CERTO! -->
-    <script src="js/logica.js"></script>
-</body>
-</html>
+const app = firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+</script>
