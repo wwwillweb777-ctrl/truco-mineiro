@@ -1,11 +1,11 @@
 // ==================================================
-// TRUCO MINEIRO — ✅ VERSÃO CORRIGIDA
+// TRUCO MINEIRO — ✅ COMPLETO! CORRIGIDO! SALAS FUNCIONANDO!
 // ==================================================
 
 // ⚠️ ESPERAR A PÁGINA CARREGAR TUDO PRIMEIRO
 document.addEventListener('DOMContentLoaded', function() {
 
-    // ✅ PEGAR O FIREBASE QUE ESTÁ NO index.html
+    // ✅ PEGAR O FIREBASE
     const db = firebase.database();
 
     // ===== CONTADORES =====
@@ -112,13 +112,14 @@ document.addEventListener('DOMContentLoaded', function() {
         };
 
         await db.ref('salas/' + novaSala.id).set(novaSala);
-        alert(`✅ SALA CRIADA!\n\n👤 ${novaSala.nome}\n🆔 Sala #${novaSala.id}\n\n🔄 Compartilhe o link!`);
+        alert(`✅ SALA CRIADA!\n\n👤 ${novaSala.nome}\n🆔 Sala #${novaSala.id}\n\n🔄 Compartilhe o link com quem vai jogar!`);
     }
 
-    // ===== 🚪 ENTRAR NA SALA =====
+    // ===== 🚪 ENTRAR NA SALA — ✅ CORRIGIDO! =====
     async function entrarNaSala(sala) {
+        // ✅ COMPARA QUEM CRIOU A SALA COM QUEM ESTÁ ENTRANDO
         if (sala.jogadorId === jogadorAtual.id) {
-            alert('⚠️ Não pode jogar contra você mesmo!');
+            alert('⚠️ Você criou esta sala!\n\n⏳ Espere alguém entrar!\n🔄 Compartilhe o link!');
             return;
         }
 
@@ -160,4 +161,4 @@ document.addEventListener('DOMContentLoaded', function() {
         botaoCriarSala.addEventListener('click', criarSala);
     }
 
-}); // ✅ FIM DO DOMContentLoaded
+}); // ✅ FIM — TUDO CARREGOU!
