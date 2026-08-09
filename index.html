@@ -68,7 +68,7 @@
         <section id="tela-jogo" class="escondido">
             <h2>🃏 JOGO COMEÇOU!</h2>
             <div id="caixa-mensagem" class="mensagem"></div>
-            <button onclick="voltarSalas()" class="btn-cinza" style="margin-top:20px;">🔄 VOLTAR ÀS SALAS</button>
+            <button onclick="location.reload()" class="btn-cinza" style="margin-top:20px;">🔄 SAIR / VOLTAR</button>
         </section>
     </main>
 
@@ -76,10 +76,12 @@
         let proximoIdJogador = 1000;
         let proximoIdSala = 5000;
         let jogadorAtual = { id: null, nome: null };
+        let minhaSalaRef = null;  // ✅ GUARDA A SALA QUE EU CRIEI
 
-        function voltarSalas() {
-            document.getElementById('tela-jogo').classList.add('escondido');
-            document.getElementById('tela-salas').classList.remove('escondido');
+        function irParaJogo(adversarioNome) {
+            document.getElementById('tela-salas').classList.add('escondido');
+            document.getElementById('tela-jogo').classList.remove('escondido');
+            document.getElementById('caixa-mensagem').innerHTML = `✅ JOGADOR ENCONTROU!<br><br>👤 Adversário: ${adversarioNome}<br><br>🎮 Jogo vai começar!`;
         }
 
         function carregarSalas() {
@@ -124,6 +126,17 @@
                 ocupada: false
             };
             await db.ref('salas/' + nova.id).set(nova);
+            
+            // ✅ FICA DE OLHO — SE ALGUÉM ENTRAR, AVISA E MUDAR TELA!
+            minhaSalaRef = db.ref('salas/' + nova.id);
+            minhaSalaRef.on('value', (snap) => {
+                const s = snap.val();
+                if (s && s.ocupada) {
+                    minhaSalaRef.off(); // PARA DE OLHAR
+                    irParaJogo('Adversário'); // ✅ MUDA A TELA!
+                }
+            });
+
             alert(`✅ SALA CRIADA!\n\nCompartilhe o link com seu adversário!`);
         }
 
@@ -133,9 +146,7 @@
                 return;
             }
             await db.ref('salas/' + sala.id).update({ ocupada: true });
-            document.getElementById('tela-salas').classList.add('escondido');
-            document.getElementById('tela-jogo').classList.remove('escondido');
-            document.getElementById('caixa-mensagem').innerHTML = `✅ VOCÊ ENTROU!<br><br>Adversário: ${sala.nome}<br><br>🎮 Jogo vai começar!`;
+            irParaJogo(sala.nome); // ✅ QUEM ENTROU, VAI PRA TELA!
         }
 
         // BOTÕES
