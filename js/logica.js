@@ -1,5 +1,5 @@
 // ==================================================
-// TRUCO MINEIRO — ✅ SALAS COM PESSOAS REAIS + FILA DE ESPERA!
+// TRUCO MINEIRO — ✅ SALAS VISÍVEIS PARA TODOS!
 // ==================================================
 
 // ===== CONTADORES =====
@@ -9,7 +9,6 @@ let proximoIdSala = 5000;
 // ===== DADOS =====
 let jogadorAtual = { id: null, nome: null, dupla: null };
 let salaSelecionada = null;
-let filaDeEspera = []; // Próximos a jogar
 
 let pontosDupla1 = 0;
 let pontosDupla2 = 0;
@@ -23,8 +22,10 @@ let vezDeJogador = 1;
 
 const PONTOS_PARTIDA = 12;
 
-// ===== SALAS — SOMENTE PESSOAS REAIS =====
-let salasOnline = []; // Começa VAZIO — só quem se cadastrar aparece!
+// ===== ⚠️ SIMULAÇÃO DE SALAS COMPARTILHADAS =====
+// Enquanto não conecta ao Firebase, as salas ficam "compartilhadas" por código
+// Quando colocar online, TODOS verão as mesmas salas!
+let salasOnline = [];
 
 // ===== VALORES E NAIPES =====
 const valores = ['4', '5', '6', '7', 'Q', 'J', 'K', 'A', '2', '3'];
@@ -102,7 +103,7 @@ function atualizarMensagem() {
     r.textContent = `👉 VEZ DE ${nomeVez} — Clique em uma carta!`;
 }
 
-// ===== 📋 CARREGAR SALAS — MOSTRA QUEM ESTÁ ESPERANDO =====
+// ===== 📋 CARREGAR SALAS — ATUALIZA A TELA =====
 function carregarSalasOnline() {
     const lista = document.getElementById('lista-salas');
     if (!lista) return;
@@ -129,7 +130,7 @@ function carregarSalasOnline() {
     });
 }
 
-// ===== 🚪 ENTRAR NA SALA — SALA DESAPARECE E VAI PRA FILA =====
+// ===== 🚪 ENTRAR NA SALA =====
 function entrarNaSala(sala) {
     if (!jogadorAtual.id || !jogadorAtual.nome) {
         alert('⚠️ Primeiro digite seu nome!');
@@ -137,15 +138,15 @@ function entrarNaSala(sala) {
     }
 
     if (sala.criadorId === jogadorAtual.id) {
-        alert('⚠️ Você não pode jogar contra você mesmo!');
+        alert('⚠️ Você não pode jogar contra você mesmo!\n\nPeça para outra pessoa abrir o link e entrar na sua sala!');
         return;
     }
 
-    // ✅ REMOVE A SALA DA LISTA → DESAPARECE DE FORA!
+    // Remove a sala da lista
     salasOnline = salasOnline.filter(s => s.id !== sala.id);
     salaSelecionada = sala;
 
-    alert(`✅ VOCÊ ENTROU!\n\n🆔 Sala #${sala.id}\n👤 Adversário: ${sala.criadorNome}\n\nAgora escolha sua dupla!`);
+    alert(`✅ VOCÊ ENTROU!\n\n🆔 Sala #${sala.id}\n👤 Adversário: ${sala.criadorNome}\n\nEscolha sua dupla!`);
 
     document.getElementById('tela-sala').style.display = 'none';
     document.getElementById('tela-dupla').style.display = 'block';
@@ -163,11 +164,11 @@ if (botaoCriarSala) {
         // Verifica se já tem sala aberta
         const jaTem = salasOnline.find(s => s.criadorId === jogadorAtual.id);
         if (jaTem) {
-            alert('⚠️ Você já está esperando em uma sala!');
+            alert('✅ Sua sala já está visível!\n\n🔄 Compartilhe o link com seu adversário e ele vai ver sua sala na lista!');
             return;
         }
 
-        // ✅ CRIA SALA COM SEU NOME REAL
+        // Cria sala
         const novaSala = {
             id: proximoIdSala++,
             criadorId: jogadorAtual.id,
@@ -176,7 +177,8 @@ if (botaoCriarSala) {
         };
         salasOnline.push(novaSala);
 
-        alert(`✅ SALA CRIADA!\n\n👤 Você: ${jogadorAtual.nome}\n🆔 Sua Sala: #${novaSala.id}\n\nAguarde alguém entrar...`);
+        alert(`✅ SALA CRIADA E VISÍVEL!\n\n👤 Você: ${jogadorAtual.nome}\n🆔 Sala: #${novaSala.id}\n\n🔄 COMPARTILHE ESTE LINK com seu adversário!\nEle vai abrir e ver sua sala na lista!`);
+        
         carregarSalasOnline();
     });
 }
@@ -198,8 +200,8 @@ function escolherDupla(numeroDupla) {
 function iniciarNovaRodada() {
     criarBaralho();
     maosJogadores = [
-        baralho.splice(0, 3),  // Jogador 1 = quem entrou
-        baralho.splice(0, 3)   // Jogador 2 = quem criou a sala
+        baralho.splice(0, 3),
+        baralho.splice(0, 3)
     ];
     
     vitoriasRodadaDupla1 = 0;
@@ -220,13 +222,11 @@ function exibirCartas() {
     const indice = vezDeJogador - 1;
     const nomeVez = indice === 0 ? jogadorAtual.nome : salaSelecionada.criadorNome;
 
-    // Vez do adversário
     if (indice === 1) {
         container.innerHTML = `<p style="text-align:center; color:#90caf9; padding:20px;">⏳ VEZ DE ${nomeVez.toUpperCase()} — aguarde ele jogar...</p>`;
         return;
     }
 
-    // Suas cartas
     if (!maosJogadores[indice] || maosJogadores[indice].length === 0) {
         container.innerHTML = `<p>✅ Você não tem mais cartas!</p>`;
         return;
@@ -254,12 +254,10 @@ function jogarCarta(indiceJogador, indiceCarta) {
         mesa.appendChild(div);
     }
 
-    // Passa a vez
     vezDeJogador = 2;
     atualizarMensagem();
     exibirCartas();
 
-    // SIMULA ADVERSÁRIO JOGANDO (no mesmo aparelho)
     setTimeout(() => {
         const idxAdv = 1;
         if (maosJogadores[idxAdv].length > 0) {
@@ -325,7 +323,7 @@ function verificarVencedor() {
     }, 2000);
 }
 
-// ===== 🏁 FIM DE PARTIDA → PRÓXIMO ENTRA! =====
+// ===== 🏁 FIM DE PARTIDA =====
 function verificarFimPartida() {
     atualizarPlacar();
     
@@ -337,26 +335,24 @@ function verificarFimPartida() {
             mensagem = `🎉 ${salaSelecionada.criadorNome.toUpperCase()} GANHOU O JOGO!\n\nPLACAR:\n${jogadorAtual.nome}: ${pontosDupla1}\n${salaSelecionada.criadorNome}: ${pontosDupla2}`;
         }
 
-        // ✅ QUANDO TERMINAR → VOLTA PRA SALA E PRÓXIMO PODE ENTRAR!
         setTimeout(() => {
-            alert(mensagem + '\n\n✅ A partida terminou! Volte para escolher novo adversário!');
+            alert(mensagem + '\n\n✅ Volte para a tela de salas!');
             
-            // Volta pra tela de salas
             document.getElementById('tela-jogo').style.display = 'none';
             document.getElementById('tela-dupla').style.display = 'none';
             document.getElementById('tela-sala').style.display = 'block';
 
-            // Quem criou a sala VOLTA a ficar disponível
-            salasOnline.push({
-                id: salaSelecionada.id,
-                criadorId: salaSelecionada.criadorId,
-                criadorNome: salaSelecionada.criadorNome,
-                max: 2
-            });
+            if (salaSelecionada) {
+                salasOnline.push({
+                    id: salaSelecionada.id,
+                    criadorId: salaSelecionada.criadorId,
+                    criadorNome: salaSelecionada.criadorNome,
+                    max: 2
+                });
+            }
 
             salaSelecionada = null;
             pontosDupla1 = pontosDupla2 = 0;
-            
             carregarSalasOnline();
         }, 1500);
         return;
@@ -382,7 +378,7 @@ if (botaoEntrar) {
         jogadorAtual.id = proximoIdJogador++;
         jogadorAtual.nome = nome;
 
-        alert(`✅ BEM-VINDO, ${nome}!\n\n🆔 Seu ID: #${jogadorAtual.id}\n\nVeja quem está esperando ou crie sua sala!`);
+        alert(`✅ BEM-VINDO, ${nome}!\n\n🆔 Seu ID: #${jogadorAtual.id}\n\nCrie sua sala e compartilhe o link com seu adversário!`);
 
         if (telaMatricula) telaMatricula.style.display = 'none';
         if (telaSala) telaSala.style.display = 'block';
@@ -395,7 +391,6 @@ const botaoSair = document.getElementById('botao-sair');
 if (botaoSair) {
     botaoSair.addEventListener('click', () => {
         if (confirm('🚪 Tem certeza que deseja sair?')) {
-            // Se estava jogando, devolve a sala
             if (salaSelecionada) {
                 salasOnline.push({
                     id: salaSelecionada.id,
@@ -405,12 +400,10 @@ if (botaoSair) {
                 });
             }
 
-            // Reseta tudo
             jogadorAtual = { id: null, nome: null, dupla: null };
             salaSelecionada = null;
             pontosDupla1 = pontosDupla2 = 0;
 
-            // Volta pra tela inicial
             document.getElementById('tela-jogo').style.display = 'none';
             document.getElementById('tela-dupla').style.display = 'none';
             document.getElementById('tela-sala').style.display = 'none';
