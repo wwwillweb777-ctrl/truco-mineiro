@@ -1,57 +1,9 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Truco Mineiro Online 🎲</title>
-
-    <!-- ✅ FIREBASE -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-    <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyATcfKpiac2DKdSjafq-NwAnuMBnxD9VBE",
-      authDomain: "truco-mineiro-1df23.firebaseapp.com",
-      databaseURL: "https://truco-mineiro-1df23-default-rtdb.firebaseio.com",
-      projectId: "truco-mineiro-1df23",
-      storageBucket: "truco-mineiro-1df23.firebasestorage.app",
-      messagingSenderId: "597079073519",
-      appId: "1:597079073519:web:fe3f4719ebfe3542d7711a"
-    };
-    const app = firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    </script>
-
-    <link rel="stylesheet" href="css/estilo.css">
-</head>
-<body>
-
-    <header>
-        <h1>🎲 TRUCO MINEIRO ONLINE</h1>
-        <p>Veja quem está jogando, escolha seu adversário e entre!</p>
-    </header>
-
-    <main>
-        <section id="tela-matricula">
-            <h2>📝 DIGITE SEU NOME PARA JOGAR</h2>
-            <input type="text" id="campo-nome" placeholder="Seu nome aqui..." maxlength="20">
-            <button id="botao-matricular">✅ ENTRAR</button>
+        <!-- ✅ TELA DO JOGO -- AGORA EXISTE! -->
+        <section id="tela-jogo" style="display:none;">
+            <h2>🃏 TRUCO MINEIRO — JOGO EM ANDAMENTO!</h2>
+            <div id="mensagem-jogo" style="background:rgba(255,255,255,0.1); padding:15px; border-radius:10px; text-align:center; font-weight:bold; color:#ffd700; margin-bottom:20px;">
+                Carregando...
+            </div>
+            <p style="text-align:center; color:#90caf9;">🎮 O jogo vai começar aqui em breve!</p>
+            <button onclick="location.reload()" style="background:#ef5350; color:white; margin-top:20px;">🔄 SAIR / VOLTAR</button>
         </section>
-
-        <section id="tela-salas" style="display:none;">
-            <h2>🟢 SALAS ONLINE</h2>
-            <p>Clique em uma sala para entrar e jogar!</p>
-            <div id="lista-salas"></div>
-            <button id="criar-sala">➕ CRIAR MINHA SALA</button>
-        </section>
-
-        <section id="tela-dupla" style="display:none;">
-            <h2>🤝 ESCOLHA SUA DUPLA</h2>
-            <p>Em desenvolvimento...</p>
-            <button onclick="alert('Em breve!')">🎲 JOGAR CONTRA O JOÃO (MÁQUINA)</button>
-        </section>
-    </main>
-
-    <script src="js/logica.js"></script>
-</body>
-</html>
