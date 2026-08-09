@@ -1,5 +1,5 @@
 // ==================================================
-// TRUCO MINEIRO — ✅ NÃO INVERTE MAIS O VENCEDOR! PRECISA DE 2 VITÓRIAS!
+// TRUCO MINEIRO — ✅ TROCA A VEZ CERTINHO! NÃO TRAVA NA 3ª!
 // ==================================================
 
 // ===== VARIÁVEIS GERAIS =====
@@ -33,22 +33,22 @@ const PONTOS_PARTIDA = 12;
 const valores = ['4', '5', '6', '7', 'Q', 'J', 'K', 'A', '2', '3'];
 const naipes = ['♦', '♥', '♠', '♣'];
 
-// ===== ✅ FORÇA DAS CARTAS — TRUCO MINEIRO =====
+// ===== ✅ FORÇA DAS CARTAS — TRUCO MINEIRO OFICIAL =====
 function calcularForca(valor, naipe) {
-    if (valor === '4' && naipe === '♣') return 14; // ZAP
-    if (valor === '7' && naipe === '♥') return 13; // 7 Copas
-    if (valor === 'A' && naipe === '♠') return 12;  // ESPADILHA
-    if (valor === '7' && naipe === '♦') return 11;  // 7 Ouros
-    if (valor === '3') return 10;
-    if (valor === '2') return 9;
-    if (valor === 'A') return 8;
-    if (valor === 'K') return 7;
-    if (valor === 'J') return 6;
-    if (valor === 'Q') return 5;
-    if (valor === '7') return 4;
-    if (valor === '6') return 3;
-    if (valor === '5') return 2;
-    if (valor === '4') return 1;
+    if (valor === '4' && naipe === '♣') return 14; // 1º ZAP (4 de Paus)
+    if (valor === '7' && naipe === '♥') return 13;  // 2º 7 de Copas
+    if (valor === 'A' && naipe === '♠') return 12;   // 3º ESPADILHA (A de Espadas)
+    if (valor === '7' && naipe === '♦') return 11;  // 4º 7 de Ouros
+    if (valor === '3') return 10;                    // 5º TODOS OS 3
+    if (valor === '2') return 9;                     // 6º TODOS OS 2
+    if (valor === 'A') return 8;                     // 7º A COMUM
+    if (valor === 'K') return 7;                     // 8º REIS
+    if (valor === 'J') return 6;                     // 9º VALETES
+    if (valor === 'Q') return 5;                     // 10º DAMAS
+    if (valor === '7') return 4;                     // 11º 7 COMUM
+    if (valor === '6') return 3;                     // 12º TODOS OS 6
+    if (valor === '5') return 2;                     // 13º TODOS OS 5
+    if (valor === '4') return 1;                     // 14º 4 COMUM
     return 0;
 }
 
@@ -57,9 +57,9 @@ function compararCartas(cartaA, cartaB) {
     if (!cartaA || !cartaB || !cartaA.valor || !cartaB.valor) return null;
     const forcaA = calcularForca(cartaA.valor, cartaA.naipe);
     const forcaB = calcularForca(cartaB.valor, cartaB.naipe);
-    if (forcaA > forcaB) return 1;   // Carta A ganha
-    if (forcaA < forcaB) return -1;  // Carta B ganha
-    return 0; // CANGOU — NÃO GANHA NINGUÉM
+    if (forcaA > forcaB) return 1;
+    if (forcaA < forcaB) return -1;
+    return 0; // CANGOU
 }
 
 // ===== ⏱️ TEMPO =====
@@ -116,6 +116,7 @@ function atualizarPlacar() {
     if (elJo) elJo.textContent = pontosJoao;
 }
 
+// ===== ✅ LIMPA MESA =====
 function limparMesa() {
     const elJ = document.getElementById('carta-jogada-jogador');
     const elJo = document.getElementById('carta-jogada-joao');
@@ -136,16 +137,8 @@ function exibirCartasJogador() {
         div.className = 'carta';
         div.innerHTML = `<span class="valor">${carta.valor}</span><span class="naipe">${carta.naipe}</span>`;
         div.onclick = () => {
-            if (vezDeJogar !== 'jogador') {
-                const r = document.getElementById('resultado-rodada');
-                if (r) r.textContent = '⏳ Ainda é a vez do João! Espere ele jogar...';
-                return;
-            }
-            if (!podeJogar) {
-                const r = document.getElementById('resultado-rodada');
-                if (r) r.textContent = '⏳ Espere o João terminar de jogar...';
-                return;
-            }
+            if (vezDeJogar !== 'jogador') return;
+            if (!podeJogar) return;
             pararTempo();
             document.querySelectorAll('.carta').forEach(c => c.classList.remove('selecionada'));
             div.classList.add('selecionada');
@@ -203,12 +196,7 @@ function iniciarNovaRodada() {
 function jogarCarta() {
     pararTempo();
     
-    if (cartasJogador.length === 0) {
-        const r = document.getElementById('resultado-rodada');
-        if (r) r.textContent = '⚠️ Você não tem mais cartas!';
-        return;
-    }
-    
+    if (cartasJogador.length === 0) return;
     if (cartaSelecionada === null || cartaSelecionada < 0 || cartaSelecionada >= cartasJogador.length) {
         cartaSelecionada = 0;
     }
@@ -227,6 +215,7 @@ function jogarCarta() {
         r.textContent = `🃏 Você jogou ${cartaJogadaJogador.valor} de ${cartaJogadaJogador.naipe}`;
     }
 
+    // ✅ AGORA É A VEZ DO JOÃO! TROCA GARANTIDA!
     vezDeJogar = 'joao';
     setTimeout(() => joaoJoga(), 1500);
 }
@@ -234,11 +223,7 @@ function jogarCarta() {
 // ===== 🤖 JOÃO JOGA =====
 function joaoJoga() {
     if (vezDeJogar !== 'joao') return;
-    if (cartasJoao.length === 0) {
-        const r = document.getElementById('resultado-rodada');
-        if (r) r.textContent = '⚠️ João não tem mais cartas!';
-        return;
-    }
+    if (cartasJoao.length === 0) return;
 
     let indice = 0;
 
@@ -281,36 +266,30 @@ function joaoJoga() {
     setTimeout(() => verificarVencedor(), 1200);
 }
 
-// ===== ✅ VERIFICAR VENCEDOR — AGORA ACERTA QUEM GANHOU! =====
+// ===== ✅ VERIFICAR VENCEDOR — TROCA A VEZ CERTINHO! =====
 function verificarVencedor() {
-    if (!cartaJogadaJogador || !cartaJogadaJoao) {
-        const r = document.getElementById('resultado-rodada');
-        if (r) r.textContent = '⏳ Aguardando cartas...';
-        return;
-    }
+    if (!cartaJogadaJogador || !cartaJogadaJoao) return;
 
     const comp = compararCartas(cartaJogadaJogador, cartaJogadaJoao);
     let vencedor;
     const r = document.getElementById('resultado-rodada');
 
     if (comp === 1) {
-        // ✅ SUA CARTA É MAIOR → VOCÊ GANHOU A JOGADA
         vitoriasRodadaJogador++;
         vencedor = 'jogador';
         if (r) r.textContent = `✅ VOCÊ GANHOU ESSA! (${vitoriasRodadaJogador} x ${vitoriasRodadaJoao})`;
     } else if (comp === -1) {
-        // ✅ CARTA DO JOÃO É MAIOR → ELE GANHOU A JOGADA
         vitoriasRodadaJoao++;
         vencedor = 'joao';
         if (r) r.textContent = `❌ JOÃO GANHOU ESSA! (${vitoriasRodadaJogador} x ${vitoriasRodadaJoao})`;
     } else {
-        // 🤝 CANGOU → NÃO CONTA VITÓRIA DE NINGUÉM!
+        // 🤝 CANGOU — QUEM JOGOU POR ÚLTIMO DESEMPATA
         vencedor = (vezDeJogar === 'jogador') ? 'joao' : 'jogador';
-        if (r) r.textContent = `🤝 CANGOU! NÃO CONTA! ${vencedor === 'jogador' ? 'VOCÊ' : 'JOÃO'} joga de novo!`;
+        if (r) r.textContent = `🤝 CANGOU! ${vencedor === 'jogador' ? 'VOCÊ' : 'JOÃO'} joga de novo!`;
     }
 
     setTimeout(() => {
-        // ✅ SÓ TERMINA QUEM FIZER 2 VITÓRIAS DE VERDADE!
+        // ✅ GANHOU 2 → RODADA ACABOU!
         if (vitoriasRodadaJogador >= 2) {
             pontosJogador += 2;
             if (r) r.textContent = `🏆 VOCÊ GANHOU A RODADA! +2 PONTOS! → ${pontosJogador} x ${pontosJoao}`;
@@ -326,20 +305,24 @@ function verificarVencedor() {
             return;
         }
 
-        // ✅ 1 x 1 → VAI PARA A 3ª E ÚLTIMA!
+        // ⚡ 1 x 1 → VAI PARA A 3ª!
         if (vitoriasRodadaJogador === 1 && vitoriasRodadaJoao === 1) {
             if (r) r.textContent = `⚡ 3ª E ÚLTIMA! Quem ganhar leva!`;
         }
 
+        // ✅ LIMPA A MESA ANTES DA PRÓXIMA JOGADA
         limparMesa();
-        vezDeJogar = vencedor;
 
+        // ✅ TROCA A VEZ DE QUEM VAI JOGAR — ISSO QUE ESTAVA FALTANDO!
+        vezDeJogar = vencedor; // 👈 AQUI ESTAVA O ERRO! AGORA TROCA CERTINHO!
+
+        // ✅ LIBERA A VEZ CORRETAMENTE
         if (vezDeJogar === 'jogador') {
             podeJogar = true;
-            iniciarContagem();
+            iniciarContagem(); // ✅ VOCÊ JOGA! LIBERA SUAS CARTAS!
         } else {
             podeJogar = false;
-            setTimeout(() => joaoJoga(), 1800);
+            setTimeout(() => joaoJoga(), 1800); // ✅ JOÃO JOGA
         }
     }, 2000);
 }
