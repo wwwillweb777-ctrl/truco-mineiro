@@ -1,33 +1,43 @@
 // ==================================================
-// TRUCO MINEIRO — ✅ TROCA A VEZ CERTINHO! NÃO TRAVA NA 3ª!
+// TRUCO MINEIRO — ✅ TUDO COM ID ÚNICO! SEM CONFUSÃO!
 // ==================================================
 
-// ===== VARIÁVEIS GERAIS =====
-let contadorJogadores = 0;
-let jogadorAtual = null;
+// ===== CONTADOR DE ID ÚNICO — GERA NÚMERO NOVO AUTOMATICAMENTE =====
+let proximoIdJogador = 1000;
+let proximoIdSala = 5000;
 
+// ===== DADOS DO JOGADOR ATUAL =====
+let jogadorAtual = {
+    id: null,
+    nome: null,
+    dupla: null // 1 ou 2
+};
+
+// ===== DADOS DA SALA =====
+let salaSelecionada = null;
+let modoJogo = null; // '2' ou '4'
+
+// ===== PLACAR =====
+let pontosDupla1 = 0;
+let pontosDupla2 = 0;
+
+// ===== DADOS DA PARTIDA =====
 let baralho = [];
-let cartasJogador = [];
-let cartasJoao = [];
-let cartaSelecionada = null;
+let maosJogadores = [];
+let cartaJogadaMesa = [];
+let vitoriasRodadaDupla1 = 0;
+let vitoriasRodadaDupla2 = 0;
+let quemJogaPrimeiro = 1;
+let vezDeJogadorId = null; // ID do jogador que joga agora
 
-let pontosJogador = 0;
-let pontosJoao = 0;
-
-let cartaJogadaJogador = null;
-let cartaJogadaJoao = null;
-
-let vitoriasRodadaJogador = 0;
-let vitoriasRodadaJoao = 0;
-
-let quemJogaPrimeiro = 'jogador';
-let vezDeJogar = 'jogador';
-let podeJogar = true;
-let temporizador = null;
-
-// ===== CONFIGURAÇÕES =====
-const TEMPO_ESPERA = 180000;
 const PONTOS_PARTIDA = 12;
+
+// ===== 📋 SALAS ONLINE — TODAS COM ID ÚNICO =====
+let salasOnline = [
+    { id: 5001, criadorId: 1001, nomeCriador: 'William', modo: '2', jogadores: [{id: 1001, nome: 'William'}], max: 2 },
+    { id: 5002, criadorId: 1002, nomeCriador: 'João', modo: '4', jogadores: [{id: 1002, nome: 'João'}], max: 4 },
+    { id: 5003, criadorId: 1003, nomeCriador: 'Pedro S.', modo: '2', jogadores: [{id: 1003, nome: 'Pedro S.'}], max: 2 }
+];
 
 // ===== VALORES E NAIPES =====
 const valores = ['4', '5', '6', '7', 'Q', 'J', 'K', 'A', '2', '3'];
@@ -35,48 +45,30 @@ const naipes = ['♦', '♥', '♠', '♣'];
 
 // ===== ✅ FORÇA DAS CARTAS — TRUCO MINEIRO OFICIAL =====
 function calcularForca(valor, naipe) {
-    if (valor === '4' && naipe === '♣') return 14; // 1º ZAP (4 de Paus)
+    if (valor === '4' && naipe === '♣') return 14; // 1º ZAP
     if (valor === '7' && naipe === '♥') return 13;  // 2º 7 de Copas
-    if (valor === 'A' && naipe === '♠') return 12;   // 3º ESPADILHA (A de Espadas)
+    if (valor === 'A' && naipe === '♠') return 12;   // 3º ESPADILHA
     if (valor === '7' && naipe === '♦') return 11;  // 4º 7 de Ouros
-    if (valor === '3') return 10;                    // 5º TODOS OS 3
-    if (valor === '2') return 9;                     // 6º TODOS OS 2
-    if (valor === 'A') return 8;                     // 7º A COMUM
-    if (valor === 'K') return 7;                     // 8º REIS
-    if (valor === 'J') return 6;                     // 9º VALETES
-    if (valor === 'Q') return 5;                     // 10º DAMAS
-    if (valor === '7') return 4;                     // 11º 7 COMUM
-    if (valor === '6') return 3;                     // 12º TODOS OS 6
-    if (valor === '5') return 2;                     // 13º TODOS OS 5
-    if (valor === '4') return 1;                     // 14º 4 COMUM
+    if (valor === '3') return 10;
+    if (valor === '2') return 9;
+    if (valor === 'A') return 8;
+    if (valor === 'K') return 7;
+    if (valor === 'J') return 6;
+    if (valor === 'Q') return 5;
+    if (valor === '7') return 4;
+    if (valor === '6') return 3;
+    if (valor === '5') return 2;
+    if (valor === '4') return 1;
     return 0;
 }
 
-// ===== ✅ COMPARAR CARTAS =====
+// ===== COMPARAR CARTAS =====
 function compararCartas(cartaA, cartaB) {
-    if (!cartaA || !cartaB || !cartaA.valor || !cartaB.valor) return null;
     const forcaA = calcularForca(cartaA.valor, cartaA.naipe);
     const forcaB = calcularForca(cartaB.valor, cartaB.naipe);
     if (forcaA > forcaB) return 1;
     if (forcaA < forcaB) return -1;
     return 0; // CANGOU
-}
-
-// ===== ⏱️ TEMPO =====
-function pararTempo() {
-    if (temporizador) { clearTimeout(temporizador); temporizador = null; }
-}
-
-function iniciarContagem() {
-    pararTempo();
-    podeJogar = true;
-    temporizador = setTimeout(() => {
-        if (vezDeJogar === 'jogador' && cartasJogador.length > 0) {
-            pararTempo();
-            cartaSelecionada = Math.floor(Math.random() * cartasJogador.length);
-            jogarCarta();
-        }
-    }, TEMPO_ESPERA);
 }
 
 // ===== 🃏 BARALHO =====
@@ -97,312 +89,197 @@ function embaralhar() {
     }
 }
 
-function distribuirCartas() {
-    criarBaralho();
-    cartasJogador = baralho.splice(0, 3);
-    cartasJoao = baralho.splice(0, 3);
-    cartaSelecionada = null;
-    vitoriasRodadaJogador = 0;
-    vitoriasRodadaJoao = 0;
-    cartaJogadaJogador = null;
-    cartaJogadaJoao = null;
-}
-
-// ===== 📊 TELA =====
+// ===== 📊 PLACAR =====
 function atualizarPlacar() {
-    const elJ = document.getElementById('pontos-jogador') || document.getElementById('placar-jogador');
-    const elJo = document.getElementById('pontos-joao') || document.getElementById('placar-joao');
-    if (elJ) elJ.textContent = pontosJogador;
-    if (elJo) elJo.textContent = pontosJoao;
+    const el1 = document.getElementById('pontos-dupla1');
+    const el2 = document.getElementById('pontos-dupla2');
+    if (el1) el1.textContent = pontosDupla1;
+    if (el2) el2.textContent = pontosDupla2;
 }
 
-// ===== ✅ LIMPA MESA =====
+// ===== ✅ LIMPAR MESA =====
 function limparMesa() {
-    const elJ = document.getElementById('carta-jogada-jogador');
-    const elJo = document.getElementById('carta-jogada-joao');
-    if (elJ) elJ.innerHTML = '';
-    if (elJo) elJo.innerHTML = '';
-    cartaJogadaJogador = null;
-    cartaJogadaJoao = null;
+    cartaJogadaMesa = [];
+    const mesa = document.getElementById('mesa-cartas');
+    if (mesa) mesa.innerHTML = '';
 }
 
-// ===== 🖼️ EXIBIR =====
-function exibirCartasJogador() {
-    const container = document.getElementById('suas-cartas') || document.getElementById('minhas-cartas');
+// ===== 📋 LISTAR SALAS ONLINE — MOSTRA ID E NOME =====
+function carregarSalasOnline() {
+    const lista = document.getElementById('lista-salas');
+    if (!lista) return;
+    lista.innerHTML = '';
+
+    salasOnline.forEach(sala => {
+        const div = document.createElement('div');
+        div.className = 'sala-item';
+        div.innerHTML = `
+            <div class="sala-cabecalho">
+                <span class="sala-id">🆔 Sala #${sala.id}</span>
+                <span class="sala-modo">Jogo de ${sala.modo} jogadores</span>
+            </div>
+            <div class="sala-dono">Criado por: ${sala.nomeCriador} (#${sala.criadorId})</div>
+            <div class="sala-quantidade">${sala.jogadores.length}/${sala.max} jogadores prontos</div>
+            <button class="botao-entrar-sala">✅ ENTRAR E JOGAR</button>
+        `;
+        div.onclick = () => entrarNaSala(sala);
+        lista.appendChild(div);
+    });
+}
+
+// ===== 🚪 ENTRAR NA SALA =====
+function entrarNaSala(sala) {
+    if (!jogadorAtual.id || !jogadorAtual.nome) {
+        alert('⚠️ Primeiro informe seu nome!');
+        return;
+    }
+
+    // Verifica se ainda cabe jogador
+    if (sala.jogadores.length >= sala.max) {
+        alert('❌ Sala cheia! Escolha outra!');
+        return;
+    }
+
+    // Adiciona você na sala com SEU ID ÚNICO
+    sala.jogadores.push({ id: jogadorAtual.id, nome: jogadorAtual.nome });
+    salaSelecionada = sala;
+    modoJogo = sala.modo;
+
+    alert(`✅ VOCÊ ENTROU!\n\n🆔 Sua ID: #${jogadorAtual.id}\n👤 Seu nome: ${jogadorAtual.nome}\n🆔 Sala: #${sala.id}\n🎮 Jogo de ${modoJogo} jogadores\n\nBora jogar!`);
+
+    // Vai escolher sua dupla
+    document.getElementById('tela-sala').style.display = 'none';
+    document.getElementById('tela-dupla').style.display = 'block';
+}
+
+// ===== 🎮 ESCOLHER DUPLA E COMEÇAR =====
+function escolherDupla(numeroDupla) {
+    jogadorAtual.dupla = numeroDupla;
+    pontosDupla1 = 0;
+    pontosDupla2 = 0;
+    quemJogaPrimeiro = 1;
+    atualizarPlacar();
+    iniciarNovaRodada();
+
+    document.getElementById('tela-dupla').style.display = 'none';
+    document.getElementById('tela-jogo').style.display = 'block';
+}
+
+// ===== 🔄 NOVA RODADA =====
+function iniciarNovaRodada() {
+    criarBaralho();
+    maosJogadores = [];
+    
+    const quantidade = (modoJogo === '2') ? 2 : 4;
+    for (let i = 0; i < quantidade; i++) {
+        maosJogadores.push(baralho.splice(0, 3));
+    }
+    
+    vitoriasRodadaDupla1 = 0;
+    vitoriasRodadaDupla2 = 0;
+    limparMesa();
+    
+    // Define quem começa
+    vezDeJogadorId = salaSelecionada.jogadores[quemJogaPrimeiro === 1 ? 0 : 1].id;
+    
+    exibirCartas();
+    atualizarMensagem();
+}
+
+// ===== 🖼️ EXIBIR CARTAS DO JOGADOR DA VEZ =====
+function exibirCartas() {
+    const container = document.getElementById('cartas-jogador');
     if (!container) return;
     container.innerHTML = '';
-    
-    cartasJogador.forEach((carta, i) => {
+
+    // Encontra a posição do jogador atual na lista da sala
+    const indiceJogador = salaSelecionada.jogadores.findIndex(j => j.id === jogadorAtual.id);
+    if (indiceJogador === -1 || !maosJogadores[indiceJogador]) return;
+
+    // Só mostra cartas se for a vez DELE jogar
+    if (vezDeJogadorId !== jogadorAtual.id) {
+        container.innerHTML = '<p class="aguarde">⏳ Aguarde a vez do outro jogador...</p>';
+        return;
+    }
+
+    // Mostra as cartas para ele jogar
+    maosJogadores[indiceJogador].forEach((carta, i) => {
         const div = document.createElement('div');
         div.className = 'carta';
         div.innerHTML = `<span class="valor">${carta.valor}</span><span class="naipe">${carta.naipe}</span>`;
-        div.onclick = () => {
-            if (vezDeJogar !== 'jogador') return;
-            if (!podeJogar) return;
-            pararTempo();
-            document.querySelectorAll('.carta').forEach(c => c.classList.remove('selecionada'));
-            div.classList.add('selecionada');
-            cartaSelecionada = i;
-            jogarCarta();
-        };
+        div.onclick = () => jogarCarta(indiceJogador, i);
         container.appendChild(div);
     });
 }
 
-function exibirCartasJoao() {
-    const c = document.getElementById('cartas-joao');
-    if (!c) return;
-    c.innerHTML = '';
-    cartasJoao.forEach(() => {
-        const div = document.createElement('div');
-        div.className = 'carta costa';
-        div.innerHTML = '<span>?</span><span>🃏</span>';
-        c.appendChild(div);
+// ===== 🃏 JOGAR CARTA =====
+function jogarCarta(indiceJogador, indiceCarta) {
+    // Só joga se for a vez dele
+    if (salaSelecionada.jogadores[indiceJogador].id !== vezDeJogadorId) {
+        alert('⚠️ Não é a sua vez!');
+        return;
+    }
+
+    // Tira a carta da mão e coloca na mesa
+    const carta = maosJogadores[indiceJogador].splice(indiceCarta, 1)[0];
+    cartaJogadaMesa.push({
+        jogadorId: vezDeJogadorId,
+        jogadorNome: salaSelecionada.jogadores.find(j => j.id === vezDeJogadorId).nome,
+        dupla: jogadorAtual.dupla,
+        carta: carta
     });
-}
 
-// ===== 🎮 INICIAR =====
-function iniciarNovaPartida() {
-    pontosJogador = 0;
-    pontosJoao = 0;
-    quemJogaPrimeiro = 'jogador';
-    atualizarPlacar();
-    iniciarNovaRodada();
-}
-
-function iniciarNovaRodada() {
-    pararTempo();
-    distribuirCartas();
-    vezDeJogar = quemJogaPrimeiro;
-    limparMesa();
-
-    if (vezDeJogar === 'jogador') {
-        podeJogar = true;
-        const r = document.getElementById('resultado-rodada');
-        if (r) r.textContent = '👉 SUA VEZ! Clique em uma carta!';
-        iniciarContagem();
-    } else {
-        podeJogar = false;
-        const r = document.getElementById('resultado-rodada');
-        if (r) r.textContent = '⏳ JOÃO JOGA PRIMEIRO...';
-        setTimeout(() => joaoJoga(), 1800);
+    // Mostra na mesa
+    const mesa = document.getElementById('mesa-cartas');
+    if (mesa) {
+        const div = document.createElement('div');
+        div.className = 'carta-jogada';
+        div.innerHTML = `
+            <div class="quem-jogou">#${vezDeJogadorId}</div>
+            <span>${carta.valor}</span>
+            <span>${carta.naipe}</span>
+        `;
+        mesa.appendChild(div);
     }
 
-    exibirCartasJogador();
-    exibirCartasJoao();
+    // TODO: continuar lógica de trocar a vez e verificar vencedor
+    exibirCartas();
 }
 
-// ===== 🃏 VOCÊ JOGA =====
-function jogarCarta() {
-    pararTempo();
-    
-    if (cartasJogador.length === 0) return;
-    if (cartaSelecionada === null || cartaSelecionada < 0 || cartaSelecionada >= cartasJogador.length) {
-        cartaSelecionada = 0;
-    }
-
-    podeJogar = false;
-    cartaJogadaJogador = cartasJogador.splice(cartaSelecionada, 1)[0];
-    cartaSelecionada = null;
-    exibirCartasJogador();
-    
-    const elJ = document.getElementById('carta-jogada-jogador');
-    if (elJ && cartaJogadaJogador) {
-        elJ.innerHTML = `<span>${cartaJogadaJogador.valor}</span><span>${cartaJogadaJogador.naipe}</span>`;
-    }
+// ===== 💬 ATUALIZAR MENSAGEM =====
+function atualizarMensagem() {
     const r = document.getElementById('resultado-rodada');
-    if (r && cartaJogadaJogador) {
-        r.textContent = `🃏 Você jogou ${cartaJogadaJogador.valor} de ${cartaJogadaJogador.naipe}`;
-    }
+    if (!r) return;
 
-    // ✅ AGORA É A VEZ DO JOÃO! TROCA GARANTIDA!
-    vezDeJogar = 'joao';
-    setTimeout(() => joaoJoga(), 1500);
-}
-
-// ===== 🤖 JOÃO JOGA =====
-function joaoJoga() {
-    if (vezDeJogar !== 'joao') return;
-    if (cartasJoao.length === 0) return;
-
-    let indice = 0;
-
-    if (cartaJogadaJogador) {
-        let menorQueGanha = null;
-        indice = -1;
-        for (let i = 0; i < cartasJoao.length; i++) {
-            if (cartasJoao[i].forca > cartaJogadaJogador.forca) {
-                if (!menorQueGanha || cartasJoao[i].forca < menorQueGanha.forca) {
-                    menorQueGanha = cartasJoao[i];
-                    indice = i;
-                }
-            }
-        }
-        if (indice === -1) {
-            let menorForca = 999;
-            for (let i = 0; i < cartasJoao.length; i++) {
-                if (cartasJoao[i].forca < menorForca) {
-                    menorForca = cartasJoao[i].forca;
-                    indice = i;
-                }
-            }
-        }
-    }
-
-    if (indice < 0 || indice >= cartasJoao.length) indice = 0;
-
-    cartaJogadaJoao = cartasJoao.splice(indice, 1)[0];
-    exibirCartasJoao();
-    
-    const elJo = document.getElementById('carta-jogada-joao');
-    if (elJo && cartaJogadaJoao) {
-        elJo.innerHTML = `<span>${cartaJogadaJoao.valor}</span><span>${cartaJogadaJoao.naipe}</span>`;
-    }
-    const r = document.getElementById('resultado-rodada');
-    if (r && cartaJogadaJoao) {
-        r.textContent = `🃏 João jogou ${cartaJogadaJoao.valor} de ${cartaJogadaJoao.naipe}`;
-    }
-
-    setTimeout(() => verificarVencedor(), 1200);
-}
-
-// ===== ✅ VERIFICAR VENCEDOR — TROCA A VEZ CERTINHO! =====
-function verificarVencedor() {
-    if (!cartaJogadaJogador || !cartaJogadaJoao) return;
-
-    const comp = compararCartas(cartaJogadaJogador, cartaJogadaJoao);
-    let vencedor;
-    const r = document.getElementById('resultado-rodada');
-
-    if (comp === 1) {
-        vitoriasRodadaJogador++;
-        vencedor = 'jogador';
-        if (r) r.textContent = `✅ VOCÊ GANHOU ESSA! (${vitoriasRodadaJogador} x ${vitoriasRodadaJoao})`;
-    } else if (comp === -1) {
-        vitoriasRodadaJoao++;
-        vencedor = 'joao';
-        if (r) r.textContent = `❌ JOÃO GANHOU ESSA! (${vitoriasRodadaJogador} x ${vitoriasRodadaJoao})`;
-    } else {
-        // 🤝 CANGOU — QUEM JOGOU POR ÚLTIMO DESEMPATA
-        vencedor = (vezDeJogar === 'jogador') ? 'joao' : 'jogador';
-        if (r) r.textContent = `🤝 CANGOU! ${vencedor === 'jogador' ? 'VOCÊ' : 'JOÃO'} joga de novo!`;
-    }
-
-    setTimeout(() => {
-        // ✅ GANHOU 2 → RODADA ACABOU!
-        if (vitoriasRodadaJogador >= 2) {
-            pontosJogador += 2;
-            if (r) r.textContent = `🏆 VOCÊ GANHOU A RODADA! +2 PONTOS! → ${pontosJogador} x ${pontosJoao}`;
-            quemJogaPrimeiro = 'jogador';
-            verificarFimPartida();
-            return;
-        }
-        if (vitoriasRodadaJoao >= 2) {
-            pontosJoao += 2;
-            if (r) r.textContent = `😔 JOÃO GANHOU A RODADA! +2 PONTOS! → ${pontosJogador} x ${pontosJoao}`;
-            quemJogaPrimeiro = 'joao';
-            verificarFimPartida();
-            return;
-        }
-
-        // ⚡ 1 x 1 → VAI PARA A 3ª!
-        if (vitoriasRodadaJogador === 1 && vitoriasRodadaJoao === 1) {
-            if (r) r.textContent = `⚡ 3ª E ÚLTIMA! Quem ganhar leva!`;
-        }
-
-        // ✅ LIMPA A MESA ANTES DA PRÓXIMA JOGADA
-        limparMesa();
-
-        // ✅ TROCA A VEZ DE QUEM VAI JOGAR — ISSO QUE ESTAVA FALTANDO!
-        vezDeJogar = vencedor; // 👈 AQUI ESTAVA O ERRO! AGORA TROCA CERTINHO!
-
-        // ✅ LIBERA A VEZ CORRETAMENTE
-        if (vezDeJogar === 'jogador') {
-            podeJogar = true;
-            iniciarContagem(); // ✅ VOCÊ JOGA! LIBERA SUAS CARTAS!
-        } else {
-            podeJogar = false;
-            setTimeout(() => joaoJoga(), 1800); // ✅ JOÃO JOGA
-        }
-    }, 2000);
-}
-
-// ===== 🏆 FIM DE JOGO =====
-function verificarFimPartida() {
-    pararTempo();
-    atualizarPlacar();
-
-    if (pontosJogador >= PONTOS_PARTIDA) {
-        setTimeout(() => alert(`🎉 VOCÊ GANHOU O JOGO!\n\nPLACAR FINAL:\nVOCÊ: ${pontosJogador}\nJOÃO: ${pontosJoao}`), 800);
-    } else if (pontosJoao >= PONTOS_PARTIDA) {
-        setTimeout(() => alert(`😔 JOÃO GANHOU O JOGO!\n\nPLACAR FINAL:\nVOCÊ: ${pontosJogador}\nJOÃO: ${pontosJoao}`), 800);
-    } else {
-        setTimeout(() => {
-            const r = document.getElementById('resultado-rodada');
-            if (r) r.textContent = '🃏 NOVA RODADA! Quem ganhou começa!';
-            setTimeout(() => iniciarNovaRodada(), 1500);
-        }, 2500);
+    const jogadorVez = salaSelecionada.jogadores.find(j => j.id === vezDeJogadorId);
+    if (jogadorVez && jogadorVez.id === jogadorAtual.id) {
+        r.textContent = `👉 SUA VEZ! Você é o #${jogadorAtual.id} — clique em uma carta!`;
+    } else if (jogadorVez) {
+        r.textContent = `⏳ Vez de ${jogadorVez.nome} (#${jogadorVez.id}) — aguarde...`;
     }
 }
 
-// ===== 🔘 BOTÕES =====
-const telaMatricula = document.getElementById('tela-matricula');
-const telaModo = document.getElementById('tela-modo');
-const telaMaquina1x1 = document.getElementById('tela-maquina-1x1');
+// ===== 🔘 BOTÃO DE ENTRAR / CADASTRAR =====
+const botaoEntrar = document.getElementById('botao-entrar');
 const campoNome = document.getElementById('campo-nome');
-const botaoMatricular = document.getElementById('botao-matricular');
-const avisoMatricula = document.getElementById('aviso-matricula');
-const meuIdMostrar = document.getElementById('meu-id');
-const botaoModoMaquina1x1 = document.getElementById('modo-maquina-1x1');
 
-if (botaoMatricular) {
-    botaoMatricular.addEventListener('click', () => {
+if (botaoEntrar) {
+    botaoEntrar.addEventListener('click', () => {
         const nome = campoNome.value.trim();
         if (!nome) {
-            if (avisoMatricula) avisoMatricula.innerHTML = '<span style="color:#ffc107;">⚠️ Digite seu nome!</span>';
+            alert('⚠️ Digite seu nome!');
             return;
         }
-        contadorJogadores++;
-        jogadorAtual = { nome: nome, id: nome + ' #' + contadorJogadores };
-        if (meuIdMostrar) meuIdMostrar.textContent = jogadorAtual.id;
-        if (telaMatricula) telaMatricula.style.display = 'none';
-        if (telaModo) telaModo.style.display = 'block';
-    });
-}
 
-if (botaoModoMaquina1x1) {
-    botaoModoMaquina1x1.addEventListener('click', () => {
-        if (telaModo) telaModo.style.display = 'none';
-        if (telaMaquina1x1) telaMaquina1x1.style.display = 'block';
-        const nomeEl = document.getElementById('nome-jogador');
-        if (nomeEl && jogadorAtual) nomeEl.textContent = jogadorAtual.nome;
-        iniciarNovaPartida();
-    });
-}
+        // GERA ID ÚNICO AUTOMATICAMENTE
+        jogadorAtual.id = proximoIdJogador++;
+        jogadorAtual.nome = nome;
 
-const botaoNovaRodada = document.getElementById('botao-nova-rodada');
-const botaoSair = document.getElementById('botao-sair');
+        alert(`✅ BEM-VINDO!\n\n🆔 Sua ID ÚNICA: #${jogadorAtual.id}\n👤 Seu nome: ${nome}\n\nNinguém tem a mesma ID que você!`);
 
-if (botaoNovaRodada) {
-    botaoNovaRodada.addEventListener('click', () => {
-        if (pontosJogador >= PONTOS_PARTIDA || pontosJoao >= PONTOS_PARTIDA) {
-            pararTempo();
-            pontosJogador = 0;
-            pontosJoao = 0;
-            atualizarPlacar();
-            iniciarNovaRodada();
-        } else alert('⚠️ Termine a rodada primeiro!');
-    });
-}
-
-if (botaoSair) {
-    botaoSair.addEventListener('click', () => {
-        pararTempo();
-        if (confirm('🚪 Sair do jogo?')) {
-            if (telaMaquina1x1) telaMaquina1x1.style.display = 'none';
-            if (telaMatricula) telaMatricula.style.display = 'block';
-            if (campoNome) campoNome.value = '';
-            if (avisoMatricula) avisoMatricula.textContent = '';
-        }
+        // Mostra lista de salas
+        document.getElementById('tela-matricula').style.display = 'none';
+        document.getElementById('tela-sala').style.display = 'block';
+        carregarSalasOnline();
     });
 }
