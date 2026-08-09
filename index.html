@@ -24,28 +24,39 @@
     <style>
         * { margin:0; padding:0; box-sizing:border-box; font-family:Arial,sans-serif; }
         body { background:linear-gradient(135deg,#1a3760,#0f2040); min-height:100vh; color:white; padding:15px; }
-        header { text-align:center; padding:20px; background:rgba(0,0,0,.25); border-radius:16px; margin-bottom:25px; }
-        h1 { color:#ffd700; font-size:2.2em; margin-bottom:8px; }
-        h2 { color:#ffd700; text-align:center; margin-bottom:20px; }
-        p { color:#d0d0d0; text-align:center; }
+        header { text-align:center; padding:15px; background:rgba(0,0,0,.25); border-radius:16px; margin-bottom:15px; }
+        h1 { color:#ffd700; font-size:1.8em; }
+        h2 { color:#ffd700; text-align:center; margin-bottom:15px; font-size:1.3em; }
         main { max-width:500px; margin:0 auto; }
-        section { background:rgba(25,50,90,.85); border-radius:16px; padding:25px 20px; margin-bottom:20px; }
-        input { width:100%; padding:14px; font-size:1.1em; border:none; border-radius:10px; margin-bottom:15px; color:#223; }
-        button { width:100%; padding:14px; font-size:1.1em; font-weight:bold; border:none; border-radius:10px; cursor:pointer; margin:5px 0; }
+        section { background:rgba(25,50,90,.85); border-radius:16px; padding:20px; margin-bottom:15px; }
+        input { width:100%; padding:12px; font-size:1em; border:none; border-radius:8px; margin-bottom:12px; color:#223; }
+        button { width:100%; padding:12px; font-size:1em; font-weight:bold; border:none; border-radius:8px; cursor:pointer; margin:4px 0; }
         .btn-verde { background:linear-gradient(180deg,#28c748,#1ea338); color:white; }
         .btn-azul { background:linear-gradient(180deg,#42a5f5,#1976d2); color:white; }
         .btn-cinza { background:linear-gradient(180deg,#78909c,#455a64); color:white; }
         .sala-minha { border:3px solid #ff9800; padding:15px; margin:10px; border-radius:8px; background:#2a2a2a; }
         .sala-outra { border:3px solid #4CAF50; padding:15px; margin:10px; border-radius:8px; background:#1a1a1a; cursor:pointer; }
         .escondido { display:none !important; }
-        .mensagem { background:rgba(255,255,255,.1); padding:15px; border-radius:10px; text-align:center; font-weight:bold; color:#ffd700; }
+        .mensagem { background:rgba(255,255,255,.1); padding:12px; border-radius:8px; text-align:center; font-weight:bold; color:#ffd700; margin-bottom:15px; }
+        
+        /* ===== MESA E CARTAS — AGORA EXISTEM! ===== */
+        .placar { display:flex; justify-content:space-around; text-align:center; margin-bottom:15px; }
+        .placar div { padding:5px 15px; }
+        .placar span { font-size:1.8em; font-weight:bold; color:#ffd700; }
+        .mesa { display:flex; justify-content:center; gap:15px; min-height:120px; background:rgba(0,0,0,.25); border-radius:12px; padding:15px; margin-bottom:15px; }
+        .area-cartas { display:flex; justify-content:center; gap:10px; flex-wrap:wrap; }
+        .carta { width:75px; height:105px; background:white; color:#223; border-radius:8px; display:flex; flex-direction:column; align-items:center; justify-content:center; font-weight:bold; cursor:pointer; box-shadow:0 3px 8px rgba(0,0,0,.3); transition:transform .1s; }
+        .carta:hover { transform:translateY(-6px); }
+        .carta.selecionada { border:3px solid #ffd700; transform:translateY(-8px); }
+        .carta .val { font-size:1.5em; line-height:1; }
+        .carta .nai { font-size:1.3em; }
+        .carta.costa { background:linear-gradient(135deg,#1976d2,#0d47a1); color:white; cursor:default; }
     </style>
 </head>
 <body>
 
     <header>
         <h1>🎲 TRUCO MINEIRO ONLINE</h1>
-        <p>Veja quem está jogando, escolha seu adversário e entre!</p>
     </header>
 
     <main>
@@ -59,57 +70,133 @@
         <!-- TELA SALAS -->
         <section id="tela-salas" class="escondido">
             <h2>🟢 SALAS ONLINE</h2>
-            <p>Clique em uma sala para entrar!</p>
+            <p style="text-align:center; color:#b8b8b8; margin-bottom:15px;">Clique em uma sala para entrar!</p>
             <div id="lista-salas"></div>
             <button id="botao-criar" class="btn-azul">➕ CRIAR MINHA SALA</button>
         </section>
 
-        <!-- TELA JOGO -->
+        <!-- ✅ TELA DO JOGO — COM CARTAS! COM MESA! COM BARALHO! -->
         <section id="tela-jogo" class="escondido">
-            <h2>🃏 JOGO COMEÇOU!</h2>
-            <div id="caixa-mensagem" class="mensagem"></div>
-            <button onclick="location.reload()" class="btn-cinza" style="margin-top:20px;">🔄 SAIR / VOLTAR</button>
+            <h2>🃏 TRUCO MINEIRO</h2>
+            <div class="mensagem" id="status-jogo">Aguardando jogada...</div>
+            
+            <!-- ✅ PLACAR -->
+            <div class="placar">
+                <div id="placar-ele">
+                    <div>Adversário</div>
+                    <span id="pts-ele">0</span>
+                </div>
+                <div>VS</div>
+                <div id="placar-eu">
+                    <div id="meu-nome">Você</div>
+                    <span id="pts-eu">0</span>
+                </div>
+            </div>
+
+            <!-- ✅ MESA DE JOGADA -->
+            <h3 style="text-align:center; color:#90caf9; margin-bottom:8px;">MESA</h3>
+            <div class="mesa" id="mesa-jogada">
+                <p style="color:#888; margin:auto;">Aguardando cartas...</p>
+            </div>
+
+            <!-- ✅ SUAS CARTAS -->
+            <h3 style="text-align:center; color:#ffd700; margin:10px 0 8px;">SUAS CARTAS</h3>
+            <div class="area-cartas" id="minhas-cartas"></div>
+
+            <button onclick="location.reload()" class="btn-cinza" style="margin-top:15px;">🔄 SAIR / VOLTAR</button>
         </section>
     </main>
 
     <script>
+        // ==========================================
+        // ✅ TUDO AQUI: SALAS + BARALHO + CARTAS
+        // ==========================================
+
+        const VALORES = ['4','5','6','7','Q','J','K','A','2','3'];
+        const NAIPES = ['♦','♥','♠','♣'];
+
         let proximoIdJogador = 1000;
         let proximoIdSala = 5000;
         let jogadorAtual = { id: null, nome: null };
-        let minhaSalaRef = null;  // ✅ GUARDA A SALA QUE EU CRIEI
+        let adversarioNome = '';
+        let jaCrieiSala = false;
+        let escutandoSala = null;
+        let salaRef = null;
 
-        function irParaJogo(adversarioNome) {
-            document.getElementById('tela-salas').classList.add('escondido');
-            document.getElementById('tela-jogo').classList.remove('escondido');
-            document.getElementById('caixa-mensagem').innerHTML = `✅ JOGADOR ENCONTROU!<br><br>👤 Adversário: ${adversarioNome}<br><br>🎮 Jogo vai começar!`;
+        // ===== FORÇA DAS CARTAS — TRUCO MINEIRO =====
+        function calcularForca(valor, naipe) {
+            if (valor === '4' && naipe === '♣') return 14; // Zap
+            if (valor === '7' && naipe === '♥') return 13; // 7 de Copas
+            if (valor === 'A' && naipe === '♠') return 12; // Espadilha
+            if (valor === '7' && naipe === '♦') return 11; // 7 de Ouro
+            const ordem = {'3':10,'2':9,'A':8,'K':7,'J':6,'Q':5,'7':4,'6':3,'5':2,'4':1};
+            return ordem[valor] || 0;
         }
 
+        // ===== CRIAR BARALHO =====
+        function criarBaralho() {
+            let baralho = [];
+            for (let v of VALORES) {
+                for (let n of NAIPES) {
+                    baralho.push({v: v, n: n, f: calcularForca(v, n)});
+                }
+            }
+            return baralho.sort(() => Math.random() - .5);
+        }
+
+        // ===== IR PARA TELA DO JOGO E DISTRIBUIR CARTAS =====
+        function irParaJogo(nomeAdversario) {
+            adversarioNome = nomeAdversario;
+            document.getElementById('tela-salas').classList.add('escondido');
+            document.getElementById('tela-jogo').classList.remove('escondido');
+            document.getElementById('meu-nome').textContent = jogadorAtual.nome;
+            document.getElementById('status-jogo').innerHTML = `✅ JOGADOR ENCONTROU: ${nomeAdversario}!<br>🃏 Distribuindo cartas...`;
+            
+            // ✅ DISTRIBUI CARTAS NA HORA!
+            setTimeout(() => {
+                const baralho = criarBaralho();
+                const minhas = baralho.splice(0,3);
+                mostrarMinhasCartas(minhas);
+                document.getElementById('status-jogo').innerHTML = `🎮 Jogo pronto! Escolha uma carta para jogar!`;
+            }, 1000);
+        }
+
+        // ✅ MOSTRAR MINHAS CARTAS NA TELA!
+        function mostrarMinhasCartas(cartas) {
+            const container = document.getElementById('minhas-cartas');
+            container.innerHTML = '';
+            cartas.forEach((c, i) => {
+                const div = document.createElement('div');
+                div.className = 'carta';
+                div.innerHTML = `<span class="val">${c.v}</span><span class="nai">${c.n}</span>`;
+                container.appendChild(div);
+            });
+        }
+
+        // ===== CARREGAR SALAS =====
         function carregarSalas() {
             const lista = document.getElementById('lista-salas');
             db.ref('salas/').on('value', (snap) => {
                 lista.innerHTML = '';
                 const dados = snap.val();
                 if (!dados) {
-                    lista.innerHTML = '<p style="color:#90caf9; padding:20px;">Ninguém criou sala ainda.</p>';
+                    lista.innerHTML = '<p style="color:#90caf9; padding:20px; text-align:center;">Ninguém criou sala ainda.</p>';
+                    jaCrieiSala = false;
                     return;
                 }
+                jaCrieiSala = false;
+                Object.values(dados).forEach(s => {
+                    if (!s.ocupada && s.jogadorId === jogadorAtual.id) jaCrieiSala = true;
+                });
                 Object.values(dados).forEach(sala => {
                     if (sala.ocupada) return;
                     const div = document.createElement('div');
                     if (sala.jogadorId === jogadorAtual.id) {
                         div.className = 'sala-minha';
-                        div.innerHTML = `
-                            <div style="font-weight:bold; font-size:18px;">🆔 Sala #${sala.id}</div>
-                            <div>👤 Você: ${sala.nome}</div>
-                            <div style="color:orange; margin-top:8px;">⏳ Aguardando alguém entrar...</div>
-                        `;
+                        div.innerHTML = `<div style="font-weight:bold; font-size:17px;">🆔 Sala #${sala.id}</div><div>👤 Você: ${sala.nome}</div><div style="color:orange; margin-top:8px;">⏳ Aguardando alguém entrar...</div>`;
                     } else {
                         div.className = 'sala-outra';
-                        div.innerHTML = `
-                            <div style="font-weight:bold; font-size:18px;">🆔 Sala #${sala.id}</div>
-                            <div>👤 Quer jogar: ${sala.nome}</div>
-                            <div style="color:lightgreen; margin-top:8px;">✅ CLIQUE AQUI PARA ENTRAR!</div>
-                        `;
+                        div.innerHTML = `<div style="font-weight:bold; font-size:17px;">🆔 Sala #${sala.id}</div><div>👤 Quer jogar: ${sala.nome}</div><div style="color:lightgreen; margin-top:8px;">✅ CLIQUE AQUI PARA ENTRAR!</div>`;
                         div.onclick = () => entrarNaSala(sala);
                     }
                     lista.appendChild(div);
@@ -117,39 +204,36 @@
             });
         }
 
+        // ===== CRIAR SALA =====
         async function criarSala() {
             if (!jogadorAtual.nome) { alert('⚠️ Digite seu nome primeiro!'); return; }
-            const nova = {
-                id: proximoIdSala++,
-                jogadorId: jogadorAtual.id,
-                nome: jogadorAtual.nome,
-                ocupada: false
-            };
-            await db.ref('salas/' + nova.id).set(nova);
+            if (jaCrieiSala) { alert('⚠️ Você já tem uma sala aberta! Espere alguém entrar!'); return; }
+            const nova = { id: proximoIdSala++, jogadorId: jogadorAtual.id, nome: jogadorAtual.nome, ocupada: false };
+            salaRef = db.ref('salas/' + nova.id);
+            await salaRef.set(nova);
+            jaCrieiSala = true;
             
-            // ✅ FICA DE OLHO — SE ALGUÉM ENTRAR, AVISA E MUDAR TELA!
-            minhaSalaRef = db.ref('salas/' + nova.id);
-            minhaSalaRef.on('value', (snap) => {
+            // ✅ QUANDO ALGUÉM ENTRAR → VAI PRO JOGO!
+            if (escutandoSala) escutandoSala.off();
+            escutandoSala = salaRef;
+            escutandoSala.on('value', (snap) => {
                 const s = snap.val();
                 if (s && s.ocupada) {
-                    minhaSalaRef.off(); // PARA DE OLHAR
-                    irParaJogo('Adversário'); // ✅ MUDA A TELA!
+                    escutandoSala.off();
+                    irParaJogo('Adversário');
                 }
             });
-
             alert(`✅ SALA CRIADA!\n\nCompartilhe o link com seu adversário!`);
         }
 
+        // ===== ENTRAR NA SALA =====
         async function entrarNaSala(sala) {
-            if (sala.jogadorId === jogadorAtual.id) {
-                alert('⚠️ É a sua sala! Espere alguém entrar!');
-                return;
-            }
+            if (sala.jogadorId === jogadorAtual.id) { alert('⚠️ É a sua sala! Espere alguém entrar!'); return; }
             await db.ref('salas/' + sala.id).update({ ocupada: true });
-            irParaJogo(sala.nome); // ✅ QUEM ENTROU, VAI PRA TELA!
+            irParaJogo(sala.nome);
         }
 
-        // BOTÕES
+        // ===== BOTÕES =====
         document.getElementById('botao-entrar').onclick = () => {
             const nome = document.getElementById('campo-nome').value.trim();
             if (!nome) { alert('⚠️ Digite seu nome!'); return; }
@@ -160,7 +244,6 @@
             document.getElementById('tela-salas').classList.remove('escondido');
             carregarSalas();
         };
-
         document.getElementById('botao-criar').onclick = criarSala;
     </script>
 </body>
