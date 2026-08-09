@@ -1,320 +1,311 @@
-/* ===== ESTILO GERAL DO JOGO TRUCO MINEIRO ===== */
+/* ==================================================
+   TRUCO MINEIRO — ESTILO COMPLETO
+   ================================================== */
 
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Segoe UI', Roboto, sans-serif;
+    font-family: 'Segoe UI', Roboto, Arial, sans-serif;
 }
 
 body {
-    background: linear-gradient(135deg, #1e3a5f, #2d5f8a);
+    background: linear-gradient(135deg, #1a3760 0%, #0f2040 100%);
     min-height: 100vh;
-    color: #fff;
-    padding: 20px;
+    color: white;
+    padding: 15px;
 }
 
 header {
     text-align: center;
-    padding: 30px 20px;
-    margin-bottom: 30px;
+    padding: 20px 10px;
     background: rgba(0,0,0,0.25);
     border-radius: 16px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    margin-bottom: 25px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
 
 header h1 {
-    font-size: 2.5rem;
     color: #ffd700;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-    margin-bottom: 10px;
+    font-size: 2.2em;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.4);
+    margin-bottom: 8px;
 }
 
 header p {
-    font-size: 1.1rem;
-    color: #e0e0e0;
+    color: #d0d0d0;
+    font-size: 1.05em;
 }
 
 main {
-    max-width: 800px;
+    max-width: 500px;
     margin: 0 auto;
 }
 
+/* ============= TELAS ============= */
+.tela-escondida { display: none; }
+.tela-ativa { display: block; }
+
 section {
-    background: rgba(255,255,255,0.08);
-    padding: 25px;
-    margin-bottom: 25px;
-    border-radius: 14px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(25, 50, 90, 0.85);
+    border-radius: 16px;
+    padding: 25px 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.3);
 }
 
-h2, h3 {
+section h2 {
     color: #ffd700;
-    margin-bottom: 18px;
-    border-bottom: 2px solid rgba(255,215,0,0.3);
-    padding-bottom: 8px;
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 1.45em;
 }
 
-/* ===== TELA DE MATRÍCULA ===== */
-#campo-nome {
+.subtitulo {
+    text-align: center;
+    color: #b8b8b8;
+    margin-bottom: 20px;
+}
+
+/* ============= INPUT ============= */
+input {
     width: 100%;
     padding: 14px;
-    font-size: 1.1rem;
+    font-size: 1.1em;
     border: none;
     border-radius: 10px;
     margin-bottom: 15px;
-    background: rgba(255,255,255,0.95);
-    color: #222;
+    background: white;
+    color: #223;
+    outline: none;
 }
 
+.aviso {
+    text-align: center;
+    font-size: 0.9em;
+    color: #90caf9;
+    margin-top: 10px;
+}
+
+/* ============= BOTÕES ============= */
 button {
-    padding: 14px 24px;
-    font-size: 1.05rem;
+    width: 100%;
+    padding: 14px;
+    font-size: 1.1em;
     font-weight: bold;
     border: none;
     border-radius: 10px;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: transform 0.1s, opacity 0.2s;
 }
 
-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+button:active {
+    transform: scale(0.97);
 }
 
-#botao-matricular {
-    background: linear-gradient(90deg, #28a745, #20c997);
+#botao-entrar {
+    background: linear-gradient(180deg, #28c748 0%, #1ea338 100%);
     color: white;
-    width: 100%;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.25);
 }
 
-#botao-matricular:hover {
-    background: linear-gradient(90deg, #218838, #1abc9c);
+#criar-sala {
+    background: linear-gradient(180deg, #42a5f5 0%, #1976d2 100%);
+    color: white;
+    margin-top: 15px;
 }
 
-#aviso-matricula {
-    margin-top: 12px;
-    font-size: 1rem;
-    min-height: 24px;
-}
-
-/* ===== IDENTIFICADOR DO JOGADOR ===== */
-.identificador {
-    background: rgba(255,215,0,0.15);
-    padding: 12px 16px;
-    border-radius: 10px;
-    margin-bottom: 20px;
-    font-size: 1.1rem;
-}
-
-.identificador span {
-    color: #ffd700;
-    font-weight: bold;
-    font-size: 1.2rem;
-}
-
-/* ===== LISTAS DE JOGADORES ===== */
-#lista-jogando, #lista-espera {
-    background: rgba(0,0,0,0.2);
-    padding: 15px;
-    border-radius: 10px;
-    min-height: 60px;
-}
-
-/* ===== BOTÕES DE FORMATO ===== */
-.botoes-formato {
+.botoes-dupla {
     display: flex;
     gap: 15px;
-    flex-wrap: wrap;
 }
 
-#botao-2jogadores {
-    background: linear-gradient(90deg, #007bff, #00bfff);
+.botoes-dupla button:nth-child(1) {
+    background: linear-gradient(180deg, #42a5f5 0%, #1565c0 100%);
     color: white;
-    flex: 1;
-    min-width: 200px;
 }
 
-#botao-4jogadores {
-    background: linear-gradient(90deg, #dc3545, #ff6347);
+.botoes-dupla button:nth-child(2) {
+    background: linear-gradient(180deg, #ef5350 0%, #c62828 100%);
     color: white;
-    flex: 1;
-    min-width: 200px;
 }
 
-/* ===== BOTÕES DE MODO DE JOGO ===== */
-.botoes-modo {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    margin-top: 20px;
-}
-
-.botao-modo {
-    background: linear-gradient(90deg, #4b2e83, #6a48b8);
+.botao-sair {
+    background: linear-gradient(180deg, #78909c 0%, #455a64 100%);
     color: white;
-    width: 100%;
-    text-align: left;
-    padding: 16px 24px;
-    font-size: 1.05rem;
+    margin-top: 15px;
 }
 
-.botao-modo:hover {
-    background: linear-gradient(90deg, #3a2469, #5a3aa0);
-    transform: translateX(5px);
-}
-
-#modo-pessoas {
-    background: linear-gradient(90deg, #007bff, #00bfff);
-}
-#modo-pessoas:hover {
-    background: linear-gradient(90deg, #0056b3, #0099cc);
-}
-
-#modo-maquina-1x1 {
-    background: linear-gradient(90deg, #28a745, #20c997);
-}
-#modo-maquina-1x1:hover {
-    background: linear-gradient(90deg, #1e7e34, #17a589);
-}
-
-#modo-maquina-duplas {
-    background: linear-gradient(90deg, #ffc107, #fd7e14);
-    color: #212529;
-}
-#modo-maquina-duplas:hover {
-    background: linear-gradient(90deg, #e0a800, #e6700d);
-}
-
-/* ===== TELA DO JOGO CONTRA A MÁQUINA ===== */
-.area-adversario, .area-jogador {
-    background: rgba(0,0,0,0.2);
-    padding: 15px;
+/* ============= SALAS ============= */
+.sala-item {
+    background: rgba(255,255,255,0.08);
     border-radius: 12px;
-    margin-bottom: 15px;
-}
-
-.jogador-cabecalho {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+    padding: 15px;
     margin-bottom: 12px;
-    font-size: 1.1rem;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: border 0.25s, background 0.25s;
 }
 
-.avatar {
-    font-size: 1.8rem;
-}
-
-.pontos {
-    margin-left: auto;
-    font-weight: bold;
-    color: #ffd700;
-}
-
-.cartas-jogador {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    justify-content: center;
-}
-
-.carta {
-    background: linear-gradient(135deg, #fff, #f0f0f0);
-    color: #000;
-    width: 70px;
-    height: 100px;
-    border-radius: 8px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    cursor: grab;
-    transition: all 0.2s ease;
-    border: 3px solid transparent;
-}
-
-.carta:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-}
-
-.carta.selecionada {
+.sala-item:hover {
     border-color: #ffd700;
-    box-shadow: 0 0 15px #ffd700;
+    background: rgba(255,255,255,0.12);
 }
 
-.carta .naipe {
-    font-size: 1.5rem;
-}
-
-.cartas-mesa {
+.sala-cabecalho {
     display: flex;
-    justify-content: center;
-    gap: 20px;
+    justify-content: space-between;
+    margin-bottom: 6px;
 }
 
-.carta-mesa {
-    background: linear-gradient(135deg, #fff, #f0f0f0);
-    color: #000;
-    width: 80px;
-    height: 110px;
-    border-radius: 8px;
-    display: inline-flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+.sala-id {
+    color: #90caf9;
     font-weight: bold;
-    border: 2px solid #ccc;
+    font-size: 0.95em;
 }
 
-.area-mesa {
-    text-align: center;
-    padding: 20px;
-    background: rgba(0,0,0,0.15);
+.sala-modo {
+    background: #ffd700;
+    color: #223;
+    padding: 2px 8px;
     border-radius: 12px;
-    margin: 15px 0;
-    border: 2px dashed rgba(255,215,0,0.4);
-}
-
-.area-mesa h4 {
-    color: #ffd700;
-    margin-bottom: 10px;
-}
-
-#resultado-rodada {
-    font-size: 1.2rem;
+    font-size: 0.85em;
     font-weight: bold;
-    color: #ffd700;
+}
+
+.sala-dono, .sala-quantidade {
+    color: #e0e0e0;
+    font-size: 0.9em;
+    margin: 4px 0;
+}
+
+.botao-entrar-sala {
+    background: #28c748;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 0.95em;
     margin-top: 10px;
 }
 
-.botoes-acao {
+/* ============= PLACAR ============= */
+.placar {
     display: flex;
-    flex-wrap: wrap;
+    justify-content: space-around;
+    align-items: center;
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.time h3 {
+    font-size: 1em;
+    margin-bottom: 5px;
+}
+
+.dupla1 h3 { color: #64b5f6; }
+.dupla2 h3 { color: #ef9a9a; }
+
+.pontos {
+    font-size: 2.2em;
+    font-weight: bold;
+    color: #ffd700;
+}
+
+.versus {
+    font-size: 1.3em;
+    color: #888;
+    font-weight: bold;
+}
+
+/* ============= MENSAGEM ============= */
+.mensagem {
+    background: rgba(255,255,255,0.1);
+    padding: 12px;
+    border-radius: 10px;
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 15px;
+    color: #ffd700;
+}
+
+.aguarde {
+    text-align: center;
+    color: #90caf9;
+    padding: 20px;
+}
+
+/* ============= MESA ============= */
+h3 {
+    margin: 15px 0 10px;
+    color: #e0e0e0;
+}
+
+.mesa-cartas {
+    display: flex;
+    justify-content: center;
     gap: 10px;
-    margin-top: 20px;
+    min-height: 110px;
+    background: rgba(0,0,0,0.2);
+    border-radius: 12px;
+    padding: 15px;
+    flex-wrap: wrap;
 }
 
-.botoes-acao button {
-    flex: 1;
-    min-width: 150px;
+/* ============= CARTAS ============= */
+.cartas-jogador {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
 }
 
-#botao-nova-rodada {
-    background: linear-gradient(90deg, #007bff, #00bfff);
+.carta, .carta-jogada {
+    width: 80px;
+    height: 110px;
+    background: white;
+    color: #223;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    cursor: pointer;
+    transition: transform 0.15s;
+}
+
+.carta:hover {
+    transform: translateY(-8px);
+}
+
+.carta.selecionada {
+    border: 3px solid #ffd700;
+    transform: translateY(-10px);
+}
+
+.carta .valor, .carta-jogada span:first-child {
+    font-size: 1.6em;
+    line-height: 1;
+}
+
+.carta .naipe, .carta-jogada span:last-child {
+    font-size: 1.4em;
+}
+
+.quem-jogou {
+    font-size: 0.7em;
+    color: #666;
+    margin-bottom: 4px;
+}
+
+.carta.costa {
+    background: linear-gradient(135deg, #1976d2, #0d47a1);
     color: white;
+    cursor: default;
 }
 
-#botao-sair {
-    background: linear-gradient(90deg, #dc3545, #c82333);
-    color: white;
-}
-
-/* ===== RESPONSIVIDADE ===== */
-@media(max-width: 600px) {
-    header h1 { font-size: 1.8rem; }
-    .botoes-formato { flex-direction: column; }
+.carta.costa:hover {
+    transform: none;
 }
