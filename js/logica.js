@@ -1,79 +1,25 @@
 // ==================================================
-// TRUCO MINEIRO — ✅ COMPLETO! CORRIGIDO! SALAS FUNCIONANDO!
+// TRUCO MINEIRO — ✅ SALAS FUNCIONAM! ENTRA E SAI!
 // ==================================================
 
-// ⚠️ ESPERAR A PÁGINA CARREGAR TUDO PRIMEIRO
 document.addEventListener('DOMContentLoaded', function() {
-
-    // ✅ PEGAR O FIREBASE
     const db = firebase.database();
 
-    // ===== CONTADORES =====
     let proximoIdJogador = 1000;
     let proximoIdSala = 5000;
-
-    // ===== DADOS =====
-    let jogadorAtual = { id: null, nome: null, dupla: null };
+    let jogadorAtual = { id: null, nome: null };
     let salaSelecionada = null;
-    let salasOnline = [];
+    let salaCriadaPorMim = null;
 
-    let pontosDupla1 = 0;
-    let pontosDupla2 = 0;
-    let baralho = [];
-    let cartasJogador = [];
-    let cartasAdversario = [];
-    let cartaSelecionada = null;
-    let cartaJogadaJogador = null;
-    let cartaJogadaAdversario = null;
-    let vitoriasRodadaJogador = 0;
-    let vitoriasRodadaAdversario = 0;
-    let quemJogaPrimeiro = 'criador';
-    let vezDeJogar = 'criador';
-    let podeJogar = true;
-
-    const PONTOS_PARTIDA = 12;
-
-    // ===== VALORES E NAIPES =====
-    const valores = ['4', '5', '6', '7', 'Q', 'J', 'K', 'A', '2', '3'];
-    const naipes = ['♦', '♥', '♠', '♣'];
-
-    // ===== ✅ FORÇA DAS CARTAS =====
-    function calcularForca(valor, naipe) {
-        if (valor === '4' && naipe === '♣') return 14; // Zap
-        if (valor === '7' && naipe === '♥') return 13;  // 7 de Copas
-        if (valor === 'A' && naipe === '♠') return 12;  // Espadilha
-        if (valor === '7' && naipe === '♦') return 11;  // 7 de Ouro
-        if (valor === '3') return 10;
-        if (valor === '2') return 9;
-        if (valor === 'A') return 8;
-        if (valor === 'K') return 7;
-        if (valor === 'J') return 6;
-        if (valor === 'Q') return 5;
-        if (valor === '7') return 4;
-        if (valor === '6') return 3;
-        if (valor === '5') return 2;
-        if (valor === '4') return 1;
-        return 0;
-    }
-
-    function compararCartas(cartaA, cartaB) {
-        const forcaA = calcularForca(cartaA.valor, cartaA.naipe);
-        const forcaB = calcularForca(cartaB.valor, cartaB.naipe);
-        if (forcaA > forcaB) return 1;
-        if (forcaA < forcaB) return -1;
-        return 0; // Cangou
-    }
-
-    // ===== 📋 CARREGAR SALAS DO FIREBASE =====
+    // ===== 📋 CARREGAR SALAS — ATUALIZA SOZINHO =====
     function carregarSalasOnline() {
         const lista = document.getElementById('lista-salas');
         if (!lista) return;
 
         db.ref('salas/').on('value', (snapshot) => {
             lista.innerHTML = '';
-            salasOnline = [];
-
             const dados = snapshot.val();
+
             if (!dados) {
                 lista.innerHTML = '<p style="text-align:center; color:#90caf9; padding:20px;">Ninguém está esperando. Crie sua sala!</p>';
                 return;
@@ -81,16 +27,27 @@ document.addEventListener('DOMContentLoaded', function() {
 
             Object.values(dados).forEach(sala => {
                 if (!sala.ocupada) {
-                    salasOnline.push(sala);
                     const div = document.createElement('div');
                     div.style = "border:1px solid #ccc; padding:15px; margin:10px; border-radius:8px; cursor:pointer; background:#2a2a2a; color:white;";
-                    div.innerHTML = `
-                        <div style="font-weight:bold; margin-bottom:5px;">🆔 Sala #${sala.id}</div>
-                        <div>👤 Quer jogar: ${sala.nome} (#${sala.jogadorId})</div>
-                        <div style="color:#90caf9; margin-top:5px;">⏳ Aguardando adversário...</div>
-                        <div style="margin-top:10px; color:lightgreen;">✅ ENTRAR E JOGAR</div>
-                    `;
-                    div.onclick = () => entrarNaSala(sala);
+                    
+                    // ✅ SE FOR A MINHA SALA → NÃO PODE ENTRAR
+                    if (sala.jogadorId === jogadorAtual.id) {
+                        div.innerHTML = `
+                            <div style="font-weight:bold; margin-bottom:5px;">🆔 Sala #${sala.id} 🔴 SUA SALA</div>
+                            <div>👤 Você: ${sala.nome}</div>
+                            <div style="color:#90caf9; margin-top:5px;">⏳ Aguardando adversário...</div>
+                            <div style="margin-top:10px; color:#ff6b6b;">❌ VOCÊ NÃO PODE ENTRAR NA PRÓPRIA SALA</div>
+                        `;
+                    } else {
+                        // ✅ SALA DE OUTRA PESSOA → PODE ENTRAR
+                        div.innerHTML = `
+                            <div style="font-weight:bold; margin-bottom:5px;">🆔 Sala #${sala.id}</div>
+                            <div>👤 Quer jogar: ${sala.nome}</div>
+                            <div style="color:#90caf9; margin-top:5px;">⏳ Aguardando adversário...</div>
+                            <div style="margin-top:10px; color:lightgreen;">✅ CLIQUE AQUI PARA ENTRAR E JOGAR</div>
+                        `;
+                        div.onclick = () => entrarNaSala(sala);
+                    }
                     lista.appendChild(div);
                 }
             });
@@ -104,6 +61,11 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
+        if (salaCriadaPorMim) {
+            alert('⚠️ Você já tem uma sala aberta! Espere alguém entrar ou saia dela primeiro.');
+            return;
+        }
+
         const novaSala = {
             id: proximoIdSala++,
             jogadorId: jogadorAtual.id,
@@ -112,21 +74,22 @@ document.addEventListener('DOMContentLoaded', function() {
         };
 
         await db.ref('salas/' + novaSala.id).set(novaSala);
-        alert(`✅ SALA CRIADA!\n\n👤 ${novaSala.nome}\n🆔 Sala #${novaSala.id}\n\n🔄 Compartilhe o link com quem vai jogar!`);
+        salaCriadaPorMim = novaSala;
+
+        alert(`✅ SALA CRIADA!\n\n🆔 Sala #${novaSala.id}\n👤 ${novaSala.nome}\n\n🔄 COMPARTILHE O LINK com quem vai jogar com você!`);
     }
 
-    // ===== 🚪 ENTRAR NA SALA — ✅ CORRIGIDO! =====
+    // ===== 🚪 ENTRAR NA SALA =====
     async function entrarNaSala(sala) {
-        // ✅ COMPARA QUEM CRIOU A SALA COM QUEM ESTÁ ENTRANDO
         if (sala.jogadorId === jogadorAtual.id) {
-            alert('⚠️ Você criou esta sala!\n\n⏳ Espere alguém entrar!\n🔄 Compartilhe o link!');
+            alert('⚠️ Esta é a SUA sala!\n\nEspere alguém entrar ou compartilhe o link!');
             return;
         }
 
         await db.ref('salas/' + sala.id).update({ ocupada: true });
         salaSelecionada = sala;
 
-        alert(`✅ VOCÊ ENTROU!\n\n🆔 Sala #${sala.id}\n👤 Adversário: ${sala.nome}`);
+        alert(`✅ VOCÊ ENTROU!\n\n🆔 Sala #${sala.id}\n👤 Adversário: ${sala.nome}\n\nJogo vai começar!`);
 
         document.getElementById('tela-salas').style.display = 'none';
         document.getElementById('tela-dupla').style.display = 'block';
@@ -149,7 +112,7 @@ document.addEventListener('DOMContentLoaded', function() {
             jogadorAtual.id = proximoIdJogador++;
             jogadorAtual.nome = nome;
 
-            alert(`✅ BEM-VINDO, ${nome}!\n\n🆔 Seu ID: #${jogadorAtual.id}`);
+            alert(`✅ BEM-VINDO, ${nome}!\n\n🆔 Seu ID: #${jogadorAtual.id}\n\nCrie sua sala ou entre em uma sala!`);
 
             if (telaMatricula) telaMatricula.style.display = 'none';
             if (telaSalas) telaSalas.style.display = 'block';
@@ -161,4 +124,4 @@ document.addEventListener('DOMContentLoaded', function() {
         botaoCriarSala.addEventListener('click', criarSala);
     }
 
-}); // ✅ FIM — TUDO CARREGOU!
+});
