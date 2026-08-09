@@ -14,93 +14,75 @@
     </header>
 
     <main>
-        <!-- TELA DE MATRÍCULA -->
-        <section id="tela-matricula">
+        <!-- ====================================== -->
+        <!-- TELA 1: MATRÍCULA                     -->
+        <!-- ====================================== -->
+        <section id="tela-matricula" class="tela-ativa">
             <h2>📝 MATRICULE-SE PARA JOGAR</h2>
-            <input type="text" id="campo-nome" placeholder="Digite seu nome..." maxlength="15">
-            <button id="botao-matricular">✅ MATRICULAR-SE</button>
-            <p id="aviso-matricula"></p>
+            <input type="text" id="campo-nome" placeholder="Digite seu nome..." autocomplete="off">
+            <button id="botao-entrar">✅ MATRICULAR-SE</button>
+            <p class="aviso">🆔 Você receberá um ID único automaticamente</p>
         </section>
 
-        <!-- TELA DE ESCOLHA DE MODO -->
-        <section id="tela-modo" style="display: none;">
-            <div class="identificador">
-                <strong>Seu identificador:</strong> <span id="meu-id"></span>
-            </div>
-
-            <h3>🎮 ESCOLHA COMO QUER JOGAR</h3>
-            <div class="botoes-modo">
-                <button id="modo-pessoas" class="botao-modo">🌐 Jogar com Pessoas Reais</button>
-                <button id="modo-maquina-1x1" class="botao-modo">🤖 Jogar contra a Máquina (1x1)</button>
-                <button id="modo-maquina-duplas" class="botao-modo">🤝 Jogar com 3 Máquinas (Duplas)</button>
-            </div>
+        <!-- ====================================== -->
+        <!-- TELA 2: SALAS ONLINE                  -->
+        <!-- ====================================== -->
+        <section id="tela-sala" class="tela-escondida">
+            <h2>🟢 SALAS ONLINE</h2>
+            <p class="subtitulo">Clique em uma sala para entrar e jogar!</p>
+            <div id="lista-salas"></div>
+            <button id="criar-sala">➕ CRIAR MINHA SALA</button>
         </section>
 
-        <!-- TELA PRINCIPAL — JOGO COM PESSOAS -->
-        <section id="tela-jogo" style="display: none;">
-            <h3>🏆 JOGANDO AGORA</h3>
-            <div id="lista-jogando">
-                <p>Ninguém jogando no momento.</p>
-            </div>
-
-            <h3>⏳ AGUARDANDO NA FILA</h3>
-            <div id="lista-espera">
-                <p>Ninguém na fila de espera.</p>
-            </div>
-
-            <h3>🎯 ESCOLHA O FORMATO DE PARTIDA</h3>
-            <div class="botoes-formato">
-                <button id="botao-2jogadores">🔵 2 Jogadores (1x1)</button>
-                <button id="botao-4jogadores">🔴 4 Jogadores (Duplas)</button>
+        <!-- ====================================== -->
+        <!-- TELA 3: ESCOLHER DUPLA                -->
+        <!-- ====================================== -->
+        <section id="tela-dupla" class="tela-escondida">
+            <h2>🤝 ESCOLHA SUA DUPLA</h2>
+            <p class="subtitulo">Com quem você vai jogar?</p>
+            <div class="botoes-dupla">
+                <button onclick="escolherDupla(1)">🔵 DUPLA 1</button>
+                <button onclick="escolherDupla(2)">🔴 DUPLA 2</button>
             </div>
         </section>
 
-        <!-- TELA DO JOGO CONTRA A MÁQUINA 1x1 -->
-        <section id="tela-maquina-1x1" style="display: none;">
-            <h3>🤖 VOCÊ vs JOÃO</h3>
-            
-            <!-- ADVERSÁRIO EM CIMA -->
-            <div class="area-adversario">
-                <div class="jogador-cabecalho">
-                    <span class="avatar">🤵‍♂️</span>
-                    <strong>João</strong>
-                    <span class="pontos">Pontos: <span id="pontos-joao">0</span></span>
+        <!-- ====================================== -->
+        <!-- TELA 4: JOGO                          -->
+        <!-- ====================================== -->
+        <section id="tela-jogo" class="tela-escondida">
+            <!-- PLACAR -->
+            <div class="placar">
+                <div class="time dupla1">
+                    <h3>🔵 DUPLA 1</h3>
+                    <div class="pontos" id="pontos-dupla1">0</div>
                 </div>
-                <div id="cartas-joao" class="cartas-jogador"></div>
-            </div>
-
-            <!-- ✅ MESA — AQUI FICAM AS DECISÕES! BOTÕES COM CORES DIFERENTES! -->
-            <div class="area-mesa">
-                <h4>🃏 MESA — É AQUI QUE SE DECIDE!</h4>
-                
-                <!-- ✅ BOTÕES DE TRUCO NA MESA, COM CORES DIFERENTES! -->
-                <div id="area-pedidos" style="text-align:center; margin:12px 0; display:flex; gap:8px; justify-content:center; flex-wrap:wrap;"></div>
-                
-                <div class="cartas-mesa">
-                    <div id="carta-jogada-joao" class="carta-mesa"></div>
-                    <div id="carta-jogada-jogador" class="carta-mesa"></div>
+                <div class="versus">VS</div>
+                <div class="time dupla2">
+                    <h3>🔴 DUPLA 2</h3>
+                    <div class="pontos" id="pontos-dupla2">0</div>
                 </div>
-                <p id="resultado-rodada"></p>
             </div>
 
-            <!-- JOGADOR EM BAIXO -->
-            <div class="area-jogador">
-                <div class="jogador-cabecalho">
-                    <span class="avatar">👤</span>
-                    <strong id="nome-jogador">Você</strong>
-                    <span class="pontos">Pontos: <span id="pontos-jogador">0</span></span>
-                </div>
-                <div id="suas-cartas" class="cartas-jogador"></div>
-            </div>
+            <!-- MENSAGEM -->
+            <div id="resultado-rodada" class="mensagem">👉 Sua vez! Clique em uma carta!</div>
 
-            <!-- BOTÕES DE AÇÃO -->
-            <div class="botoes-acao">
-                <button id="botao-nova-rodada">🔄 Nova Partida</button>
-                <button id="botao-sair">🚪 Sair do Jogo</button>
+            <!-- MESA -->
+            <h3>🃏 MESA</h3>
+            <div id="mesa-cartas" class="mesa-cartas"></div>
+
+            <!-- SUAS CARTAS -->
+            <h3>✋ SUAS CARTAS</h3>
+            <div id="cartas-jogador" class="cartas-jogador"></div>
+
+            <!-- BOTÕES -->
+            <div class="botoes-jogo">
+                <button id="botao-sair" class="botao-sair">🚪 SAIR</button>
             </div>
         </section>
+
     </main>
 
-    <script src="js/logica.js"></script>
+    <script src="js/seu-arquivo-javascript.js"></script>
+    <!-- ⚠️ MUDE O NOME DO ARQUIVO ACIMA PARA O NOME QUE VOCÊ USOU! -->
 </body>
 </html>
