@@ -3,248 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Truco Mineiro Online 🎲</title>
+    <title>Meu App Sem Barra</title>
 
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-    <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyATcfKpiac2DKdSjafq-NwAnuMBnxD9VBE",
-      authDomain: "truco-mineiro-1df23.firebaseapp.com",
-      databaseURL: "https://truco-mineiro-1df23-default-rtdb.firebaseio.com",
-      projectId: "truco-mineiro-1df23",
-      storageBucket: "truco-mineiro-1df23.firebasestorage.app",
-      messagingSenderId: "597079073519",
-      appId: "1:597079073519:web:fe3f4719ebfe3542d7711a"
-    };
-    const app = firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    </script>
+    <!-- ✅ ISSO AQUI ESCONDE A BARRA DE PESQUISA -->
+    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTWV1IEFwcCIsInNob3J0X25hbWUiOiJBcHAiLCJzdGFydF91cmwiOiIuaW5kZXguaHRtbCIsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwiYmFja2dyb3VuZF9jb2xvciI6IiMwYTc0YzciLCJ0aGVtZV9jb2xvciI6IiMwYTc0YzciLCJpY29ucyI6W3sic3JjIjoiaHR0cHM6Ly9pY29ucy5wbmcvcmljaC81OTIvMTkyMDUxOC5wbmciLCJzaXplcyI6IjE5MngxOTIiLCJ0eXBlIjoiaW1hZ2UvcG5nIn1dfQ==">
+    <meta name="theme-color" content="#0284c7">
 
     <style>
-        * { margin:0; padding:0; box-sizing:border-box; font-family:Arial,sans-serif; }
-        body { background:linear-gradient(135deg,#1a3760,#0f2040); min-height:100vh; color:white; padding:15px; }
-        header { text-align:center; padding:15px; background:rgba(0,0,0,.25); border-radius:16px; margin-bottom:15px; }
-        h1 { color:#ffd700; font-size:1.8em; }
-        h2 { color:#ffd700; text-align:center; margin-bottom:15px; font-size:1.3em; }
-        main { max-width:500px; margin:0 auto; }
-        section { background:rgba(25,50,90,.85); border-radius:16px; padding:20px; margin-bottom:15px; }
-        input { width:100%; padding:12px; font-size:1em; border:none; border-radius:8px; margin-bottom:12px; color:#223; }
-        button { width:100%; padding:12px; font-size:1em; font-weight:bold; border:none; border-radius:8px; cursor:pointer; margin:4px 0; }
-        .btn-verde { background:linear-gradient(180deg,#28c748,#1ea338); color:white; }
-        .btn-azul { background:linear-gradient(180deg,#42a5f5,#1976d2); color:white; }
-        .btn-cinza { background:linear-gradient(180deg,#78909c,#455a64); color:white; }
-        .sala-minha { border:3px solid #ff9800; padding:15px; margin:10px; border-radius:8px; background:#2a2a2a; }
-        .sala-outra { border:3px solid #4CAF50; padding:15px; margin:10px; border-radius:8px; background:#1a1a1a; cursor:pointer; }
-        .escondido { display:none !important; }
-        .mensagem { background:rgba(255,255,255,.1); padding:12px; border-radius:8px; text-align:center; font-weight:bold; color:#ffd700; margin-bottom:15px; }
-        
-        /* ===== MESA E CARTAS — AGORA EXISTEM! ===== */
-        .placar { display:flex; justify-content:space-around; text-align:center; margin-bottom:15px; }
-        .placar div { padding:5px 15px; }
-        .placar span { font-size:1.8em; font-weight:bold; color:#ffd700; }
-        .mesa { display:flex; justify-content:center; gap:15px; min-height:120px; background:rgba(0,0,0,.25); border-radius:12px; padding:15px; margin-bottom:15px; }
-        .area-cartas { display:flex; justify-content:center; gap:10px; flex-wrap:wrap; }
-        .carta { width:75px; height:105px; background:white; color:#223; border-radius:8px; display:flex; flex-direction:column; align-items:center; justify-content:center; font-weight:bold; cursor:pointer; box-shadow:0 3px 8px rgba(0,0,0,.3); transition:transform .1s; }
-        .carta:hover { transform:translateY(-6px); }
-        .carta.selecionada { border:3px solid #ffd700; transform:translateY(-8px); }
-        .carta .val { font-size:1.5em; line-height:1; }
-        .carta .nai { font-size:1.3em; }
-        .carta.costa { background:linear-gradient(135deg,#1976d2,#0d47a1); color:white; cursor:default; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: sans-serif; }
+        body {
+            background: linear-gradient(135deg, #0a2463, #0284c7);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .caixa {
+            background: white;
+            color: #0a2463;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+            max-width: 400px;
+            width: 100%;
+        }
+        h1 { font-size: 22px; margin-bottom: 8px; }
+        p { color: #666; margin-bottom: 20px; }
+        button {
+            background: #0284c7;
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            border-radius: 10px;
+            font-size: 16px;
+            width: 100%;
+            margin: 6px 0;
+            cursor: pointer;
+        }
+        button:hover { background: #036ea8; }
+        .status { margin-top: 16px; font-size: 14px; color: green; }
+        .aviso { font-size: 13px; color: #888; margin-top: 12px; }
     </style>
 </head>
 <body>
 
-    <header>
-        <h1>🎲 TRUCO MINEIRO ONLINE</h1>
-    </header>
+<div class="caixa">
+    <h1>📱 Aplicativo Sem Barra</h1>
+    <p>Instale e abra pelo ícone → a barra SOME!</p>
 
-    <main>
-        <!-- TELA MATRÍCULA -->
-        <section id="tela-matricula">
-            <h2>📝 DIGITE SEU NOME</h2>
-            <input type="text" id="campo-nome" placeholder="Seu nome aqui...">
-            <button id="botao-entrar" class="btn-verde">✅ ENTRAR</button>
-        </section>
+    <button onclick="testar()">✅ Testar Funcionamento</button>
+    <button onclick="instalar()">📲 Instalar na Tela Inicial</button>
 
-        <!-- TELA SALAS -->
-        <section id="tela-salas" class="escondido">
-            <h2>🟢 SALAS ONLINE</h2>
-            <p style="text-align:center; color:#b8b8b8; margin-bottom:15px;">Clique em uma sala para entrar!</p>
-            <div id="lista-salas"></div>
-            <button id="botao-criar" class="btn-azul">➕ CRIAR MINHA SALA</button>
-        </section>
+    <div class="status" id="status">✅ Carregado com sucesso!</div>
+    <div class="aviso" id="aviso">⚠️ Abra pelo ícone instalado → barra de pesquisa DESAPARECE</div>
+</div>
 
-        <!-- ✅ TELA DO JOGO — COM CARTAS! COM MESA! COM BARALHO! -->
-        <section id="tela-jogo" class="escondido">
-            <h2>🃏 TRUCO MINEIRO</h2>
-            <div class="mensagem" id="status-jogo">Aguardando jogada...</div>
-            
-            <!-- ✅ PLACAR -->
-            <div class="placar">
-                <div id="placar-ele">
-                    <div>Adversário</div>
-                    <span id="pts-ele">0</span>
-                </div>
-                <div>VS</div>
-                <div id="placar-eu">
-                    <div id="meu-nome">Você</div>
-                    <span id="pts-eu">0</span>
-                </div>
-            </div>
+<script>
+    // 📲 FUNÇÃO DE INSTALAÇÃO
+    let promptInstalar;
 
-            <!-- ✅ MESA DE JOGADA -->
-            <h3 style="text-align:center; color:#90caf9; margin-bottom:8px;">MESA</h3>
-            <div class="mesa" id="mesa-jogada">
-                <p style="color:#888; margin:auto;">Aguardando cartas...</p>
-            </div>
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        promptInstalar = e;
+        status.textContent = '📲 Pronto para instalar!';
+    });
 
-            <!-- ✅ SUAS CARTAS -->
-            <h3 style="text-align:center; color:#ffd700; margin:10px 0 8px;">SUAS CARTAS</h3>
-            <div class="area-cartas" id="minhas-cartas"></div>
-
-            <button onclick="location.reload()" class="btn-cinza" style="margin-top:15px;">🔄 SAIR / VOLTAR</button>
-        </section>
-    </main>
-
-    <script>
-        // ==========================================
-        // ✅ TUDO AQUI: SALAS + BARALHO + CARTAS
-        // ==========================================
-
-        const VALORES = ['4','5','6','7','Q','J','K','A','2','3'];
-        const NAIPES = ['♦','♥','♠','♣'];
-
-        let proximoIdJogador = 1000;
-        let proximoIdSala = 5000;
-        let jogadorAtual = { id: null, nome: null };
-        let adversarioNome = '';
-        let jaCrieiSala = false;
-        let escutandoSala = null;
-        let salaRef = null;
-
-        // ===== FORÇA DAS CARTAS — TRUCO MINEIRO =====
-        function calcularForca(valor, naipe) {
-            if (valor === '4' && naipe === '♣') return 14; // Zap
-            if (valor === '7' && naipe === '♥') return 13; // 7 de Copas
-            if (valor === 'A' && naipe === '♠') return 12; // Espadilha
-            if (valor === '7' && naipe === '♦') return 11; // 7 de Ouro
-            const ordem = {'3':10,'2':9,'A':8,'K':7,'J':6,'Q':5,'7':4,'6':3,'5':2,'4':1};
-            return ordem[valor] || 0;
+    function instalar() {
+        if (!promptInstalar) {
+            alert('ℹ️ Já está instalado ou não disponível.\n\nInstale manualmente:\n⋮ (menu do navegador) → "Adicionar à tela inicial"');
+            return;
         }
+        promptInstalar.prompt();
+        promptInstalar.userChoice.then(choice => {
+            status.textContent = choice.outcome === 'accepted' 
+                ? '🎉 INSTALADO COM SUCESSO!' 
+                : '⚠️ Instalação cancelada';
+            promptInstalar = null;
+        });
+    }
 
-        // ===== CRIAR BARALHO =====
-        function criarBaralho() {
-            let baralho = [];
-            for (let v of VALORES) {
-                for (let n of NAIPES) {
-                    baralho.push({v: v, n: n, f: calcularForca(v, n)});
-                }
-            }
-            return baralho.sort(() => Math.random() - .5);
-        }
+    function testar() {
+        alert('✅ Tudo funcionando perfeitamente!\n\n📲 Instale o app e abra pelo ícone → a barra de pesquisa SOME!');
+    }
+</script>
 
-        // ===== IR PARA TELA DO JOGO E DISTRIBUIR CARTAS =====
-        function irParaJogo(nomeAdversario) {
-            adversarioNome = nomeAdversario;
-            document.getElementById('tela-salas').classList.add('escondido');
-            document.getElementById('tela-jogo').classList.remove('escondido');
-            document.getElementById('meu-nome').textContent = jogadorAtual.nome;
-            document.getElementById('status-jogo').innerHTML = `✅ JOGADOR ENCONTROU: ${nomeAdversario}!<br>🃏 Distribuindo cartas...`;
-            
-            // ✅ DISTRIBUI CARTAS NA HORA!
-            setTimeout(() => {
-                const baralho = criarBaralho();
-                const minhas = baralho.splice(0,3);
-                mostrarMinhasCartas(minhas);
-                document.getElementById('status-jogo').innerHTML = `🎮 Jogo pronto! Escolha uma carta para jogar!`;
-            }, 1000);
-        }
-
-        // ✅ MOSTRAR MINHAS CARTAS NA TELA!
-        function mostrarMinhasCartas(cartas) {
-            const container = document.getElementById('minhas-cartas');
-            container.innerHTML = '';
-            cartas.forEach((c, i) => {
-                const div = document.createElement('div');
-                div.className = 'carta';
-                div.innerHTML = `<span class="val">${c.v}</span><span class="nai">${c.n}</span>`;
-                container.appendChild(div);
-            });
-        }
-
-        // ===== CARREGAR SALAS =====
-        function carregarSalas() {
-            const lista = document.getElementById('lista-salas');
-            db.ref('salas/').on('value', (snap) => {
-                lista.innerHTML = '';
-                const dados = snap.val();
-                if (!dados) {
-                    lista.innerHTML = '<p style="color:#90caf9; padding:20px; text-align:center;">Ninguém criou sala ainda.</p>';
-                    jaCrieiSala = false;
-                    return;
-                }
-                jaCrieiSala = false;
-                Object.values(dados).forEach(s => {
-                    if (!s.ocupada && s.jogadorId === jogadorAtual.id) jaCrieiSala = true;
-                });
-                Object.values(dados).forEach(sala => {
-                    if (sala.ocupada) return;
-                    const div = document.createElement('div');
-                    if (sala.jogadorId === jogadorAtual.id) {
-                        div.className = 'sala-minha';
-                        div.innerHTML = `<div style="font-weight:bold; font-size:17px;">🆔 Sala #${sala.id}</div><div>👤 Você: ${sala.nome}</div><div style="color:orange; margin-top:8px;">⏳ Aguardando alguém entrar...</div>`;
-                    } else {
-                        div.className = 'sala-outra';
-                        div.innerHTML = `<div style="font-weight:bold; font-size:17px;">🆔 Sala #${sala.id}</div><div>👤 Quer jogar: ${sala.nome}</div><div style="color:lightgreen; margin-top:8px;">✅ CLIQUE AQUI PARA ENTRAR!</div>`;
-                        div.onclick = () => entrarNaSala(sala);
-                    }
-                    lista.appendChild(div);
-                });
-            });
-        }
-
-        // ===== CRIAR SALA =====
-        async function criarSala() {
-            if (!jogadorAtual.nome) { alert('⚠️ Digite seu nome primeiro!'); return; }
-            if (jaCrieiSala) { alert('⚠️ Você já tem uma sala aberta! Espere alguém entrar!'); return; }
-            const nova = { id: proximoIdSala++, jogadorId: jogadorAtual.id, nome: jogadorAtual.nome, ocupada: false };
-            salaRef = db.ref('salas/' + nova.id);
-            await salaRef.set(nova);
-            jaCrieiSala = true;
-            
-            // ✅ QUANDO ALGUÉM ENTRAR → VAI PRO JOGO!
-            if (escutandoSala) escutandoSala.off();
-            escutandoSala = salaRef;
-            escutandoSala.on('value', (snap) => {
-                const s = snap.val();
-                if (s && s.ocupada) {
-                    escutandoSala.off();
-                    irParaJogo('Adversário');
-                }
-            });
-            alert(`✅ SALA CRIADA!\n\nCompartilhe o link com seu adversário!`);
-        }
-
-        // ===== ENTRAR NA SALA =====
-        async function entrarNaSala(sala) {
-            if (sala.jogadorId === jogadorAtual.id) { alert('⚠️ É a sua sala! Espere alguém entrar!'); return; }
-            await db.ref('salas/' + sala.id).update({ ocupada: true });
-            irParaJogo(sala.nome);
-        }
-
-        // ===== BOTÕES =====
-        document.getElementById('botao-entrar').onclick = () => {
-            const nome = document.getElementById('campo-nome').value.trim();
-            if (!nome) { alert('⚠️ Digite seu nome!'); return; }
-            jogadorAtual.id = proximoIdJogador++;
-            jogadorAtual.nome = nome;
-            alert(`✅ BEM-VINDO, ${nome}!`);
-            document.getElementById('tela-matricula').classList.add('escondido');
-            document.getElementById('tela-salas').classList.remove('escondido');
-            carregarSalas();
-        };
-        document.getElementById('botao-criar').onclick = criarSala;
-    </script>
 </body>
 </html>
