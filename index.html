@@ -23,11 +23,13 @@
             width: 100%;
             max-width: 450px;
             height: 150px;
-            object-fit: cover;
+            object-fit: contain;
             border-radius: 16px;
             display: block;
             margin: 0 auto 20px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            background: #fff;
+            padding: 10px;
         }
 
         .container {
@@ -45,6 +47,17 @@
             color: #0a2463;
             margin-bottom: 25px;
             font-size: 22px;
+        }
+
+        .aviso-mestra {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            color: #856404;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            text-align: center;
         }
 
         .input-group {
@@ -88,6 +101,16 @@
 
         button:hover {
             background-color: #0d3080;
+        }
+
+        .btn-mestra {
+            background-color: #b8860b;
+            margin-top: 10px;
+            font-size: 15px;
+        }
+
+        .btn-mestra:hover {
+            background-color: #9c730a;
         }
 
         .resumo {
@@ -151,13 +174,8 @@
             color: #888;
         }
 
-        .tela-senha {
-            display: block;
-        }
-
-        .tela-dados {
-            display: none;
-        }
+        .tela-senha { display: block; }
+        .tela-dados { display: none; }
 
         .usuario-atual {
             background: #e6f2ff;
@@ -177,14 +195,29 @@
             margin: 0 0 15px 0;
         }
 
-        .btn-sair:hover {
-            background: #5a6268;
+        .btn-sair:hover { background: #5a6268; }
+
+        .area-mestra {
+            background: #fff8e1;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 2px solid #ffc107;
         }
+
+        .btn-senha-nova {
+            background: #28a745;
+            padding: 8px;
+            font-size: 15px;
+            margin-top: 8px;
+        }
+
+        .btn-senha-nova:hover { background: #218838; }
     </style>
 </head>
 <body>
     <!-- IMAGEM NO CABEÇALHO -->
-    <img src="https://i.postimg.cc/tCVbrtpX/IMG-20260907-162841.webp" alt="Logo" class="cabecalho-img">
+    <img src="https://i.postimg.cc/tCVbrtpX/IMG-20260907-162841.webp" alt="Pizzaria Juninho" class="cabecalho-img">
 
     <div class="container">
         <!-- TELA DE SENHA -->
@@ -202,17 +235,29 @@
             </div>
 
             <button onclick="entrarSistema()">🔑 Entrar / Criar Conta</button>
+            <button class="btn-mestra" onclick="abrirPainelMestra()">👑 Acesso do Administrador</button>
         </div>
 
-        <!-- TELA DE DADOS (só aparece após senha correta) -->
+        <!-- TELA DE DADOS -->
         <div id="telaDados" class="tela-dados">
             <h1>📋 Registro de Entregas</h1>
             
             <div class="usuario-atual">
                 👤 <span id="mostraUsuario"></span>
+                <span id="textoMestra" style="color:#b8860b; font-size:13px; margin-left:8px; display:none;">👑 Acesso Mestre</span>
             </div>
 
             <button class="btn-sair" onclick="sairSistema()">🚪 Sair</button>
+
+            <!-- ÁREA DO ADMINISTRADOR — só aparece com a senha mestra -->
+            <div id="areaMestra" class="area-mestra" style="display:none;">
+                <strong>👑 Painel do Administrador</strong>
+                <p style="font-size:13px; margin:5px 0;">Redefinir senha deste usuário:</p>
+                <div class="input-group" style="margin-bottom:8px;">
+                    <input type="password" id="novaSenhaAdmin" placeholder="Nova senha...">
+                </div>
+                <button class="btn-senha-nova" onclick="alterarSenhaUsuario()">✅ Alterar Senha</button>
+            </div>
 
             <div class="input-group">
                 <label>Nome do Cliente</label>
@@ -246,80 +291,118 @@
     </div>
 
     <script>
+        // 🔐 SENHA MESTRA — SÓ VOCÊ SABE! ALTERE AQUI SE QUISER!
+        const SENHA_MESTRA = 'juninho2026'; // ← Mude para a sua senha!
+        const CHAVE_PRINCIPAL = 'sistema_entregas_dados';
+        
         let usuarioAtual = null;
         let senhaAtual = null;
-        const CHAVE_PRINCIPAL = 'sistema_entregas_dados';
+        let ehAcessoMestra = false;
 
-        // Pegar todos os dados salvos
         function pegarTodosDados() {
             const todos = localStorage.getItem(CHAVE_PRINCIPAL);
             return todos ? JSON.parse(todos) : {};
         }
 
-        // Salvar todos os dados
         function salvarTodosDados(dados) {
             localStorage.setItem(CHAVE_PRINCIPAL, JSON.stringify(dados));
         }
 
-        // Entrar ou criar conta
+        // 👑 PAINEL MESTRA — acessa qualquer conta
+        function abrirPainelMestra() {
+            const nome = prompt('👑 Acesso Administrador\nDigite o nome do entregador:');
+            if (!nome) return;
+            
+            const senhaDigitada = prompt('Digite a SENHA MESTRA:');
+            if (senhaDigitada !== SENHA_MESTRA) {
+                alert('❌ Senha mestra incorreta!');
+                return;
+            }
+
+            // Acha o usuário (busca pelo nome)
+            const todosDados = pegarTodosDados();
+            let senhaOriginal = null;
+            let chaveEncontrada = null;
+
+            for (const chave in todosDados) {
+                if (chave.startsWith(`usuario_${nome}_`)) {
+                    chaveEncontrada = chave;
+                    senhaOriginal = chave.replace(`usuario_${nome}_`, '');
+                    break;
+                }
+            }
+
+            if (!chaveEncontrada) {
+                alert(`Usuário "${nome}" não encontrado!`);
+                return;
+            }
+
+            // Entra como MESTRA
+            usuarioAtual = nome;
+            senhaAtual = senhaOriginal;
+            ehAcessoMestra = true;
+            abrirTelaDados();
+            atualizarTela();
+            alert(`✅ Acesso Mestre concedido para: ${nome}`);
+        }
+
+        // 🔑 Entrada normal
         function entrarSistema() {
             const nome = document.getElementById('nomeUsuario').value.trim();
             const senha = document.getElementById('senhaUsuario').value.trim();
 
-            if (!nome) {
-                alert('Digite seu nome!');
-                return;
-            }
-            if (!senha) {
-                alert('Digite sua senha!');
+            if (!nome) { alert('Digite seu nome!'); return; }
+            if (!senha) { alert('Digite sua senha!'); return; }
+
+            // Verifica se é a senha mestra sendo usada aqui
+            if (senha === SENHA_MESTRA) {
+                alert('⚠️ Use o botão "Acesso do Administrador" para entrar com a senha mestra!');
                 return;
             }
 
             const todosDados = pegarTodosDados();
             const chaveUsuario = `usuario_${nome}_${senha}`;
 
-            // Se não existe, cria automaticamente
+            // Cria se não existir
             if (!todosDados[chaveUsuario]) {
-                todosDados[chaveUsuario] = {
-                    nome: nome,
-                    entregas: []
-                };
+                todosDados[chaveUsuario] = { nome, entregas: [] };
                 salvarTodosDados(todosDados);
                 alert(`✅ Usuário "${nome}" criado com sucesso!\nGuarde bem sua senha!`);
             }
 
-            // Entra no sistema
             usuarioAtual = nome;
             senhaAtual = senha;
+            ehAcessoMestra = false;
             abrirTelaDados();
             atualizarTela();
         }
 
-        // Sair do sistema
         function sairSistema() {
             usuarioAtual = null;
             senhaAtual = null;
+            ehAcessoMestra = false;
             document.getElementById('telaSenha').style.display = 'block';
             document.getElementById('telaDados').style.display = 'none';
             document.getElementById('nomeUsuario').value = '';
             document.getElementById('senhaUsuario').value = '';
         }
 
-        // Abrir tela de dados
         function abrirTelaDados() {
             document.getElementById('telaSenha').style.display = 'none';
             document.getElementById('telaDados').style.display = 'block';
             document.getElementById('mostraUsuario').textContent = usuarioAtual;
+            
+            // Mostra marca de acesso mestra e painel admin
+            document.getElementById('textoMestra').style.display = ehAcessoMestra ? 'inline' : 'none';
+            document.getElementById('areaMestra').style.display = ehAcessoMestra ? 'block' : 'none';
         }
 
-        // Pegar dados do usuário atual
         function pegarMeusDados() {
             const todosDados = pegarTodosDados();
             const chaveUsuario = `usuario_${usuarioAtual}_${senhaAtual}`;
             return todosDados[chaveUsuario] || { entregas: [] };
         }
 
-        // Salvar dados do usuário atual
         function salvarMeusDados(dadosUsuario) {
             const todosDados = pegarTodosDados();
             const chaveUsuario = `usuario_${usuarioAtual}_${senhaAtual}`;
@@ -327,24 +410,38 @@
             salvarTodosDados(todosDados);
         }
 
-        // Registrar nova entrega
+        // 👑 ALTERAR SENHA — só admin
+        function alterarSenhaUsuario() {
+            if (!ehAcessoMestra) return;
+            const novaSenha = document.getElementById('novaSenhaAdmin').value.trim();
+            if (!novaSenha) { alert('Digite a nova senha!'); return; }
+
+            const todosDados = pegarTodosDados();
+            const chaveAntiga = `usuario_${usuarioAtual}_${senhaAtual}`;
+            
+            if (!todosDados[chaveAntiga]) return;
+
+            // Move os dados para a NOVA chave
+            const dados = todosDados[chaveAntiga];
+            delete todosDados[chaveAntiga];
+            const novaChave = `usuario_${usuarioAtual}_${novaSenha}`;
+            todosDados[novaChave] = dados;
+            
+            salvarTodosDados(todosDados);
+            senhaAtual = novaSenha; // Atualiza na sessão atual
+            
+            alert(`✅ Senha alterada com sucesso!\nNova senha: ${novaSenha}`);
+            document.getElementById('novaSenhaAdmin').value = '';
+        }
+
         function registrarEntrega() {
             const nomeCliente = document.getElementById('nomeCliente').value.trim();
             const bairro = document.getElementById('bairro').value.trim();
             const valorTaxa = parseFloat(document.getElementById('valorTaxa').value) || 0;
 
-            if (!nomeCliente) {
-                alert('Digite o nome do cliente!');
-                return;
-            }
-            if (!bairro) {
-                alert('Digite o bairro!');
-                return;
-            }
-            if (valorTaxa <= 0) {
-                alert('Digite o valor da taxa!');
-                return;
-            }
+            if (!nomeCliente) { alert('Digite o nome do cliente!'); return; }
+            if (!bairro) { alert('Digite o bairro!'); return; }
+            if (valorTaxa <= 0) { alert('Digite o valor da taxa!'); return; }
 
             const agora = new Date();
             const dataFormatada = agora.toLocaleDateString('pt-BR');
@@ -363,13 +460,11 @@
             salvarMeusDados(minhaConta);
             atualizarTela();
 
-            // Limpar campos
             document.getElementById('nomeCliente').value = '';
             document.getElementById('bairro').value = '';
             document.getElementById('valorTaxa').value = '';
         }
 
-        // Excluir entrega
         function excluirEntrega(id) {
             if (confirm('Tem certeza que deseja excluir?')) {
                 const minhaConta = pegarMeusDados();
@@ -379,7 +474,6 @@
             }
         }
 
-        // Atualizar toda a tela
         function atualizarTela() {
             const minhaConta = pegarMeusDados();
             const entregas = minhaConta.entregas;
