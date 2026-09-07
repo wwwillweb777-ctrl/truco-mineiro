@@ -90,20 +90,21 @@
             border-color: #0a2463;
         }
 
-        /* 👁️ BOTÃO OLHO — MOSTRAR/ESCONDER SENHA */
+        /* 👁️ BOTÃO OLHO — CORRIGIDO! */
         .btn-olho {
             position: absolute;
             right: 12px;
             top: 38px;
             background: none;
             border: none;
-            font-size: 22px;
+            font-size: 24px;
             cursor: pointer;
             padding: 0;
             width: auto;
             color: #666;
             margin: 0;
             z-index: 10;
+            line-height: 1;
         }
 
         .btn-olho:hover {
@@ -341,7 +342,7 @@
             <div class="input-group">
                 <label>Senha de Acesso</label>
                 <input type="password" id="senhaUsuario" placeholder="Crie ou digite sua senha...">
-                <button type="button" class="btn-olho" onclick="mostrarSenha('senhaUsuario', this)">👁️</button>
+                <button type="button" class="btn-olho" id="btnOlhoUsuario" onclick="mostrarSenha('senhaUsuario', this)">👁️</button>
             </div>
 
             <button onclick="entrarSistema()">🔑 Entrar / Criar Conta</button>
@@ -351,7 +352,7 @@
                 <h3>👑 Área Administrativa</h3>
                 <div class="input-group">
                     <input type="password" id="senhaMestraInput" placeholder="Digite a senha mestra...">
-                    <button type="button" class="btn-olho" onclick="mostrarSenha('senhaMestraInput', this)">👁️</button>
+                    <button type="button" class="btn-olho" id="btnOlhoMestra" onclick="mostrarSenha('senhaMestraInput', this)">👁️</button>
                 </div>
                 <button class="btn-adm" onclick="entrarAdministrador()">🔓 Acessar Painel Completo</button>
             </div>
@@ -420,17 +421,19 @@
         
         let usuarioAtual = null;
         let senhaAtual = null;
-        let veioDoAdmin = false; // Marca se entrou pelo painel admin
+        let veioDoAdmin = false;
 
-        // 👁️ FUNÇÃO MOSTRAR/ESCONDER SENHA — VALE PARA TODOS!
+        // 👁️ FUNÇÃO CORRIGIDA — OLHO ABERTO = VER SENHA | OLHO FECHADO = ESCONDER
         function mostrarSenha(idInput, botao) {
             const input = document.getElementById(idInput);
             if (input.type === 'password') {
+                // Senha ESCONDIDA → ao clicar → MOSTRA → olho ABERTO
                 input.type = 'text';
-                botao.textContent = '🙈';
+                botao.textContent = '🙈'; // Olho aberto = vendo → troca para fechado
             } else {
+                // Senha VISÍVEL → ao clicar → ESCONDE → olho FECHADO
                 input.type = 'password';
-                botao.textContent = '👁️';
+                botao.textContent = '👁️'; // Olho fechado = escondido
             }
         }
 
@@ -497,19 +500,17 @@
             }
         }
 
-        // Entra como usuário pelo painel ADMIN — mostra botão de VOLTAR
         function entrarComoUsuario(nome, senha) {
-            veioDoAdmin = true; // Marca que veio do painel
+            veioDoAdmin = true;
             usuarioAtual = nome;
             senhaAtual = senha;
             document.getElementById('telaAdmin').style.display = 'none';
             document.getElementById('telaDados').style.display = 'block';
             document.getElementById('mostraUsuario').textContent = nome;
-            document.getElementById('btnVoltarPainel').style.display = 'flex'; // Mostra botão voltar
+            document.getElementById('btnVoltarPainel').style.display = 'flex';
             atualizarTela();
         }
 
-        // 👑 VOLTAR PARA O PAINEL ADMINISTRATIVO
         function voltarParaPainelAdmin() {
             usuarioAtual = null;
             senhaAtual = null;
@@ -562,7 +563,7 @@
 
         // === 🔑 ENTRADA NORMAL DOS ENTREGADORES ===
         function entrarSistema() {
-            veioDoAdmin = false; // Entrou normal — não mostra botão voltar admin
+            veioDoAdmin = false;
             const nome = document.getElementById('nomeUsuario').value.trim();
             const senha = document.getElementById('senhaUsuario').value.trim();
 
@@ -584,7 +585,7 @@
             document.getElementById('telaSenha').style.display = 'none';
             document.getElementById('telaDados').style.display = 'block';
             document.getElementById('mostraUsuario').textContent = nome;
-            document.getElementById('btnVoltarPainel').style.display = 'none'; // Não mostra para entregador
+            document.getElementById('btnVoltarPainel').style.display = 'none';
             atualizarTela();
         }
 
@@ -600,6 +601,9 @@
             document.getElementById('senhaUsuario').value = '';
             document.getElementById('senhaMestraInput').value = '';
             document.getElementById('btnVoltarPainel').style.display = 'none';
+            // Reseta os botões de olho
+            document.getElementById('btnOlhoUsuario').textContent = '👁️';
+            document.getElementById('btnOlhoMestra').textContent = '👁️';
         }
 
         // === 📊 FUNÇÕES DE REGISTRO ===
