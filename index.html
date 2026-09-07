@@ -90,7 +90,7 @@
             border-color: #0a2463;
         }
 
-        /* 👁️ BOTÃO OLHO — CORRIGIDO! */
+        /* 👁️ BOTÃO OLHO — CORRIGIDO CONFORME PEDIDO */
         .btn-olho {
             position: absolute;
             right: 12px;
@@ -342,7 +342,7 @@
             <div class="input-group">
                 <label>Senha de Acesso</label>
                 <input type="password" id="senhaUsuario" placeholder="Crie ou digite sua senha...">
-                <button type="button" class="btn-olho" id="btnOlhoUsuario" onclick="mostrarSenha('senhaUsuario', this)">👁️</button>
+                <button type="button" class="btn-olho" id="btnOlhoUsuario" onclick="mostrarSenha('senhaUsuario', this)">🙈</button>
             </div>
 
             <button onclick="entrarSistema()">🔑 Entrar / Criar Conta</button>
@@ -352,7 +352,7 @@
                 <h3>👑 Área Administrativa</h3>
                 <div class="input-group">
                     <input type="password" id="senhaMestraInput" placeholder="Digite a senha mestra...">
-                    <button type="button" class="btn-olho" id="btnOlhoMestra" onclick="mostrarSenha('senhaMestraInput', this)">👁️</button>
+                    <button type="button" class="btn-olho" id="btnOlhoMestra" onclick="mostrarSenha('senhaMestraInput', this)">🙈</button>
                 </div>
                 <button class="btn-adm" onclick="entrarAdministrador()">🔓 Acessar Painel Completo</button>
             </div>
@@ -423,17 +423,19 @@
         let senhaAtual = null;
         let veioDoAdmin = false;
 
-        // 👁️ FUNÇÃO CORRIGIDA — OLHO ABERTO = VER SENHA | OLHO FECHADO = ESCONDER
+        // 👁️ FUNÇÃO CORRIGIDA — EXATAMENTE COMO PEDIU:
+        // 🙈 Olho FECHADO = senha ESCONDIDA
+        // 👁️ Olho ABERTO = senha VISÍVEL
         function mostrarSenha(idInput, botao) {
             const input = document.getElementById(idInput);
             if (input.type === 'password') {
-                // Senha ESCONDIDA → ao clicar → MOSTRA → olho ABERTO
+                // Senha escondida → clica → MOSTRA → olho ABERTO
                 input.type = 'text';
-                botao.textContent = '🙈'; // Olho aberto = vendo → troca para fechado
+                botao.textContent = '👁️';
             } else {
-                // Senha VISÍVEL → ao clicar → ESCONDE → olho FECHADO
+                // Senha visível → clica → ESCONDE → olho FECHADO
                 input.type = 'password';
-                botao.textContent = '👁️'; // Olho fechado = escondido
+                botao.textContent = '🙈';
             }
         }
 
@@ -601,9 +603,9 @@
             document.getElementById('senhaUsuario').value = '';
             document.getElementById('senhaMestraInput').value = '';
             document.getElementById('btnVoltarPainel').style.display = 'none';
-            // Reseta os botões de olho
-            document.getElementById('btnOlhoUsuario').textContent = '👁️';
-            document.getElementById('btnOlhoMestra').textContent = '👁️';
+            // Reseta os botões de olho para o estado inicial (escondido)
+            document.getElementById('btnOlhoUsuario').textContent = '🙈';
+            document.getElementById('btnOlhoMestra').textContent = '🙈';
         }
 
         // === 📊 FUNÇÕES DE REGISTRO ===
