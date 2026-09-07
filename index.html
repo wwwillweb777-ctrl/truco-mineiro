@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Registro de Entregas</title>
+    <title>Registro de Entregas</title>
     <style>
         * {
             margin: 0;
@@ -47,7 +47,7 @@
             color: #333;
         }
 
-        input, select {
+        input {
             width: 100%;
             padding: 12px;
             border: 2px solid #ddd;
@@ -56,7 +56,7 @@
             transition: border-color 0.3s;
         }
 
-        input:focus, select:focus {
+        input:focus {
             outline: none;
             border-color: #0a2463;
         }
@@ -104,11 +104,22 @@
         }
 
         .entrega-item {
-            padding: 10px;
+            padding: 12px 10px;
             border-bottom: 1px solid #ddd;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .entrega-cima {
             display: flex;
             justify-content: space-between;
             align-items: center;
+        }
+
+        .entrega-baixo {
+            font-size: 14px;
+            color: #555;
         }
 
         .btn-excluir {
@@ -117,16 +128,16 @@
             font-size: 14px;
             width: auto;
             margin: 0;
+            border-radius: 6px;
         }
 
         .btn-excluir:hover {
             background: #c82333;
         }
 
-        .data-texto {
+        .data-hora {
             font-size: 12px;
-            color: #666;
-            margin-right: 8px;
+            color: #888;
         }
     </style>
 </head>
@@ -135,23 +146,18 @@
         <h1>📋 Registro de Entregas</h1>
 
         <div class="input-group">
-            <label>Valor da nota (R$)</label>
-            <input type="number" id="valorNota" step="0.01" placeholder="Ex: 25.90">
-        </div>
-
-        <div class="input-group">
-            <label>Taxa de entrega (R$)</label>
-            <input type="number" id="taxaEntrega" step="0.01" placeholder="Ex: 5.00">
+            <label>Nome do Cliente</label>
+            <input type="text" id="nomeCliente" placeholder="Digite o nome do cliente...">
         </div>
 
         <div class="input-group">
             <label>Bairro / Região</label>
-            <select id="bairro">
-                <option value="Tijuco">Tijuco</option>
-                <option value="Região intermediária">Região intermediária</option>
-                <option value="Além do Paraguai">Além do Paraguai</option>
-                <option value="Outro">Outro</option>
-            </select>
+            <input type="text" id="bairro" placeholder="Digite o bairro...">
+        </div>
+
+        <div class="input-group">
+            <label>Valor da Taxa (R$)</label>
+            <input type="number" id="valorTaxa" step="0.01" placeholder="Ex: 5.00">
         </div>
 
         <button onclick="registrarEntrega()">✅ Registrar Entrega</button>
@@ -172,7 +178,7 @@
     <script>
         let entregas = [];
 
-        // Carregar dados salvos ao abrir a página
+        // Carregar dados salvos
         function carregarDados() {
             const dadosSalvos = localStorage.getItem('entregas');
             if (dadosSalvos) {
@@ -181,28 +187,41 @@
             }
         }
 
-        // Salvar no localStorage
+        // Salvar dados
         function salvarDados() {
             localStorage.setItem('entregas', JSON.stringify(entregas));
         }
 
-        // Registrar nova entrega
+        // Registrar nova entrega — DATA e HORA automáticas!
         function registrarEntrega() {
-            const valorNota = parseFloat(document.getElementById('valorNota').value) || 0;
-            const taxaEntrega = parseFloat(document.getElementById('taxaEntrega').value) || 0;
-            const bairro = document.getElementById('bairro').value;
+            const nomeCliente = document.getElementById('nomeCliente').value.trim();
+            const bairro = document.getElementById('bairro').value.trim();
+            const valorTaxa = parseFloat(document.getElementById('valorTaxa').value) || 0;
 
-            if (taxaEntrega === 0) {
-                alert('Por favor, digite o valor da taxa de entrega!');
+            if (!nomeCliente) {
+                alert('Digite o nome do cliente!');
+                return;
+            }
+            if (!bairro) {
+                alert('Digite o bairro!');
+                return;
+            }
+            if (valorTaxa <= 0) {
+                alert('Digite o valor da taxa!');
                 return;
             }
 
+            const agora = new Date();
+            const dataFormatada = agora.toLocaleDateString('pt-BR');
+            const horaFormatada = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
             const entrega = {
                 id: Date.now(),
-                valorNota,
-                taxaEntrega,
+                nomeCliente,
                 bairro,
-                data: new Date().toLocaleString('pt-BR')
+                valorTaxa,
+                data: dataFormatada,
+                hora: horaFormatada
             };
 
             entregas.push(entrega);
@@ -210,8 +229,9 @@
             atualizarTela();
 
             // Limpar campos
-            document.getElementById('valorNota').value = '';
-            document.getElementById('taxaEntrega').value = '';
+            document.getElementById('nomeCliente').value = '';
+            document.getElementById('bairro').value = '';
+            document.getElementById('valorTaxa').value = '';
         }
 
         // Excluir entrega
@@ -223,10 +243,10 @@
             }
         }
 
-        // Atualizar toda a tela
+        // Atualizar tela — cálculos automáticos!
         function atualizarTela() {
             const qtd = entregas.length;
-            const total = entregas.reduce((soma, e) => soma + e.taxaEntrega, 0);
+            const total = entregas.reduce((soma, e) => soma + e.valorTaxa, 0);
 
             document.getElementById('qtdEntregas').textContent = qtd;
             document.getElementById('valorTotal').textContent = total.toFixed(2).replace('.', ',');
@@ -238,17 +258,20 @@
                 const item = document.createElement('div');
                 item.className = 'entrega-item';
                 item.innerHTML = `
-                    <div>
-                        <span class="data-texto">${e.data}</span>
-                        <strong>${e.bairro}</strong> — R$ ${e.taxaEntrega.toFixed(2).replace('.', ',')}
+                    <div class="entrega-cima">
+                        <strong>${e.nomeCliente}</strong>
+                        <button class="btn-excluir" onclick="excluirEntrega(${e.id})">X</button>
                     </div>
-                    <button class="btn-excluir" onclick="excluirEntrega(${e.id})">X</button>
+                    <div class="entrega-baixo">
+                        📍 ${e.bairro} • R$ ${e.valorTaxa.toFixed(2).replace('.', ',')}
+                        <span class="data-hora"> • ${e.data} às ${e.hora}</span>
+                    </div>
                 `;
                 lista.appendChild(item);
             });
         }
 
-        // Iniciar ao carregar a página
+        // Iniciar
         carregarDados();
     </script>
 </body>
