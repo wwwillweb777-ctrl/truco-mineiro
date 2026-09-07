@@ -19,6 +19,17 @@
             padding: 20px;
         }
 
+        .cabecalho-img {
+            width: 100%;
+            max-width: 450px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 16px;
+            display: block;
+            margin: 0 auto 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
         .container {
             max-width: 450px;
             margin: 0 auto;
@@ -139,60 +150,184 @@
             font-size: 12px;
             color: #888;
         }
+
+        .tela-senha {
+            display: block;
+        }
+
+        .tela-dados {
+            display: none;
+        }
+
+        .usuario-atual {
+            background: #e6f2ff;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            text-align: center;
+            font-weight: bold;
+            color: #0a2463;
+        }
+
+        .btn-sair {
+            background: #6c757d;
+            padding: 8px 12px;
+            font-size: 14px;
+            width: auto;
+            margin: 0 0 15px 0;
+        }
+
+        .btn-sair:hover {
+            background: #5a6268;
+        }
     </style>
 </head>
 <body>
+    <!-- IMAGEM NO CABEÇALHO -->
+    <img src="https://i.postimg.cc/tCVbrtpX/IMG-20260907-162841.webp" alt="Logo" class="cabecalho-img">
+
     <div class="container">
-        <h1>📋 Registro de Entregas</h1>
+        <!-- TELA DE SENHA -->
+        <div id="telaSenha" class="tela-senha">
+            <h1>🔐 Acesso ao Sistema</h1>
+            
+            <div class="input-group">
+                <label>Nome do Entregador</label>
+                <input type="text" id="nomeUsuario" placeholder="Digite seu nome...">
+            </div>
 
-        <div class="input-group">
-            <label>Nome do Cliente</label>
-            <input type="text" id="nomeCliente" placeholder="Digite o nome do cliente...">
+            <div class="input-group">
+                <label>Senha de Acesso</label>
+                <input type="password" id="senhaUsuario" placeholder="Crie ou digite sua senha...">
+            </div>
+
+            <button onclick="entrarSistema()">🔑 Entrar / Criar Conta</button>
         </div>
 
-        <div class="input-group">
-            <label>Bairro / Região</label>
-            <input type="text" id="bairro" placeholder="Digite o bairro...">
-        </div>
+        <!-- TELA DE DADOS (só aparece após senha correta) -->
+        <div id="telaDados" class="tela-dados">
+            <h1>📋 Registro de Entregas</h1>
+            
+            <div class="usuario-atual">
+                👤 <span id="mostraUsuario"></span>
+            </div>
 
-        <div class="input-group">
-            <label>Valor da Taxa (R$)</label>
-            <input type="number" id="valorTaxa" step="0.01" placeholder="Ex: 5.00">
-        </div>
+            <button class="btn-sair" onclick="sairSistema()">🚪 Sair</button>
 
-        <button onclick="registrarEntrega()">✅ Registrar Entrega</button>
+            <div class="input-group">
+                <label>Nome do Cliente</label>
+                <input type="text" id="nomeCliente" placeholder="Digite o nome do cliente...">
+            </div>
 
-        <div class="resumo">
-            <h2>📊 Resumo</h2>
-            <p>Total de entregas: <span id="qtdEntregas">0</span></p>
-            <p>Valor total das taxas:</p>
-            <p class="valor-total">R$ <span id="valorTotal">0,00</span></p>
+            <div class="input-group">
+                <label>Bairro / Região</label>
+                <input type="text" id="bairro" placeholder="Digite o bairro...">
+            </div>
 
-            <div class="lista-entregas">
-                <h3 style="margin-top:15px; font-size:16px; color:#0a2463;">Histórico</h3>
-                <div id="lista"></div>
+            <div class="input-group">
+                <label>Valor da Taxa (R$)</label>
+                <input type="number" id="valorTaxa" step="0.01" placeholder="Ex: 5.00">
+            </div>
+
+            <button onclick="registrarEntrega()">✅ Registrar Entrega</button>
+
+            <div class="resumo">
+                <h2>📊 Resumo</h2>
+                <p>Total de entregas: <span id="qtdEntregas">0</span></p>
+                <p>Valor total das taxas:</p>
+                <p class="valor-total">R$ <span id="valorTotal">0,00</span></p>
+
+                <div class="lista-entregas">
+                    <h3 style="margin-top:15px; font-size:16px; color:#0a2463;">Histórico</h3>
+                    <div id="lista"></div>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        let entregas = [];
+        let usuarioAtual = null;
+        let senhaAtual = null;
+        const CHAVE_PRINCIPAL = 'sistema_entregas_dados';
 
-        // Carregar dados salvos
-        function carregarDados() {
-            const dadosSalvos = localStorage.getItem('entregas');
-            if (dadosSalvos) {
-                entregas = JSON.parse(dadosSalvos);
-                atualizarTela();
+        // Pegar todos os dados salvos
+        function pegarTodosDados() {
+            const todos = localStorage.getItem(CHAVE_PRINCIPAL);
+            return todos ? JSON.parse(todos) : {};
+        }
+
+        // Salvar todos os dados
+        function salvarTodosDados(dados) {
+            localStorage.setItem(CHAVE_PRINCIPAL, JSON.stringify(dados));
+        }
+
+        // Entrar ou criar conta
+        function entrarSistema() {
+            const nome = document.getElementById('nomeUsuario').value.trim();
+            const senha = document.getElementById('senhaUsuario').value.trim();
+
+            if (!nome) {
+                alert('Digite seu nome!');
+                return;
             }
+            if (!senha) {
+                alert('Digite sua senha!');
+                return;
+            }
+
+            const todosDados = pegarTodosDados();
+            const chaveUsuario = `usuario_${nome}_${senha}`;
+
+            // Se não existe, cria automaticamente
+            if (!todosDados[chaveUsuario]) {
+                todosDados[chaveUsuario] = {
+                    nome: nome,
+                    entregas: []
+                };
+                salvarTodosDados(todosDados);
+                alert(`✅ Usuário "${nome}" criado com sucesso!\nGuarde bem sua senha!`);
+            }
+
+            // Entra no sistema
+            usuarioAtual = nome;
+            senhaAtual = senha;
+            abrirTelaDados();
+            atualizarTela();
         }
 
-        // Salvar dados
-        function salvarDados() {
-            localStorage.setItem('entregas', JSON.stringify(entregas));
+        // Sair do sistema
+        function sairSistema() {
+            usuarioAtual = null;
+            senhaAtual = null;
+            document.getElementById('telaSenha').style.display = 'block';
+            document.getElementById('telaDados').style.display = 'none';
+            document.getElementById('nomeUsuario').value = '';
+            document.getElementById('senhaUsuario').value = '';
         }
 
-        // Registrar nova entrega — DATA e HORA automáticas!
+        // Abrir tela de dados
+        function abrirTelaDados() {
+            document.getElementById('telaSenha').style.display = 'none';
+            document.getElementById('telaDados').style.display = 'block';
+            document.getElementById('mostraUsuario').textContent = usuarioAtual;
+        }
+
+        // Pegar dados do usuário atual
+        function pegarMeusDados() {
+            const todosDados = pegarTodosDados();
+            const chaveUsuario = `usuario_${usuarioAtual}_${senhaAtual}`;
+            return todosDados[chaveUsuario] || { entregas: [] };
+        }
+
+        // Salvar dados do usuário atual
+        function salvarMeusDados(dadosUsuario) {
+            const todosDados = pegarTodosDados();
+            const chaveUsuario = `usuario_${usuarioAtual}_${senhaAtual}`;
+            todosDados[chaveUsuario] = dadosUsuario;
+            salvarTodosDados(todosDados);
+        }
+
+        // Registrar nova entrega
         function registrarEntrega() {
             const nomeCliente = document.getElementById('nomeCliente').value.trim();
             const bairro = document.getElementById('bairro').value.trim();
@@ -215,17 +350,17 @@
             const dataFormatada = agora.toLocaleDateString('pt-BR');
             const horaFormatada = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
-            const entrega = {
+            const minhaConta = pegarMeusDados();
+            minhaConta.entregas.push({
                 id: Date.now(),
                 nomeCliente,
                 bairro,
                 valorTaxa,
                 data: dataFormatada,
                 hora: horaFormatada
-            };
+            });
 
-            entregas.push(entrega);
-            salvarDados();
+            salvarMeusDados(minhaConta);
             atualizarTela();
 
             // Limpar campos
@@ -237,14 +372,18 @@
         // Excluir entrega
         function excluirEntrega(id) {
             if (confirm('Tem certeza que deseja excluir?')) {
-                entregas = entregas.filter(e => e.id !== id);
-                salvarDados();
+                const minhaConta = pegarMeusDados();
+                minhaConta.entregas = minhaConta.entregas.filter(e => e.id !== id);
+                salvarMeusDados(minhaConta);
                 atualizarTela();
             }
         }
 
-        // Atualizar tela — cálculos automáticos!
+        // Atualizar toda a tela
         function atualizarTela() {
+            const minhaConta = pegarMeusDados();
+            const entregas = minhaConta.entregas;
+
             const qtd = entregas.length;
             const total = entregas.reduce((soma, e) => soma + e.valorTaxa, 0);
 
@@ -270,9 +409,6 @@
                 lista.appendChild(item);
             });
         }
-
-        // Iniciar
-        carregarDados();
     </script>
 </body>
 </html>
