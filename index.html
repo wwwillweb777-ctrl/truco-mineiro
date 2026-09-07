@@ -19,7 +19,6 @@
             padding: 20px;
         }
 
-        /* 🖼️ IMAGEM NO CABEÇALHO — CARREGANDO CORRETAMENTE */
         .cabecalho-img {
             width: 100%;
             max-width: 450px;
@@ -50,7 +49,6 @@
             font-size: 22px;
         }
 
-        /* 👑 ÁREA ADMINISTRATIVA — DESTAQUE */
         .caixa-adm {
             background: linear-gradient(135deg, #fff3cd, #ffe69c);
             border: 2px solid #b8860b;
@@ -68,6 +66,7 @@
 
         .input-group {
             margin-bottom: 15px;
+            position: relative;
         }
 
         label {
@@ -79,7 +78,7 @@
 
         input {
             width: 100%;
-            padding: 12px;
+            padding: 12px 45px 12px 12px;
             border: 2px solid #ddd;
             border-radius: 10px;
             font-size: 16px;
@@ -89,6 +88,27 @@
         input:focus {
             outline: none;
             border-color: #0a2463;
+        }
+
+        /* 👁️ BOTÃO OLHO — MOSTRAR/ESCONDER SENHA */
+        .btn-olho {
+            position: absolute;
+            right: 12px;
+            top: 38px;
+            background: none;
+            border: none;
+            font-size: 22px;
+            cursor: pointer;
+            padding: 0;
+            width: auto;
+            color: #666;
+            margin: 0;
+            z-index: 10;
+        }
+
+        .btn-olho:hover {
+            background: none;
+            color: #000;
         }
 
         button {
@@ -119,8 +139,23 @@
             background-color: #9c730a;
         }
 
-        .btn-sair {
+        .btn-voltar-adm {
             background: #6c757d;
+            padding: 10px 15px;
+            font-size: 15px;
+            width: auto;
+            margin: 0 0 15px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-voltar-adm:hover {
+            background: #5a6268;
+        }
+
+        .btn-sair {
+            background: #dc3545;
             padding: 10px 15px;
             font-size: 15px;
             width: auto;
@@ -128,7 +163,7 @@
         }
 
         .btn-sair:hover {
-            background: #5a6268;
+            background: #c82333;
         }
 
         .resumo {
@@ -207,7 +242,6 @@
             font-size: 18px;
         }
 
-        /* 👑 PAINEL ADMINISTRATIVO COMPLETO */
         .painel-admin {
             background: #fff8e1;
             border: 2px solid #b8860b;
@@ -245,6 +279,7 @@
             display: flex;
             gap: 8px;
             margin-top: 5px;
+            flex-wrap: wrap;
         }
 
         .btn-entrar {
@@ -291,7 +326,6 @@
     </style>
 </head>
 <body>
-    <!-- 🖼️ IMAGEM DO CABEÇALHO — CARREGANDO CORRETAMENTE -->
     <img src="https://i.postimg.cc/tCVbrtpX/IMG-20260907-162841.webp" alt="Pizzaria & Hamburgueria Juninho Delivery" class="cabecalho-img">
 
     <div class="container">
@@ -307,24 +341,27 @@
             <div class="input-group">
                 <label>Senha de Acesso</label>
                 <input type="password" id="senhaUsuario" placeholder="Crie ou digite sua senha...">
+                <button type="button" class="btn-olho" onclick="mostrarSenha('senhaUsuario', this)">👁️</button>
             </div>
 
             <button onclick="entrarSistema()">🔑 Entrar / Criar Conta</button>
 
-            <!-- 👑 ÁREA ADMINISTRATIVA — CAMPO EXCLUSIVO PARA VOCÊ -->
+            <!-- 👑 ÁREA ADMINISTRATIVA -->
             <div class="caixa-adm">
                 <h3>👑 Área Administrativa</h3>
                 <div class="input-group">
                     <input type="password" id="senhaMestraInput" placeholder="Digite a senha mestra...">
+                    <button type="button" class="btn-olho" onclick="mostrarSenha('senhaMestraInput', this)">👁️</button>
                 </div>
                 <button class="btn-adm" onclick="entrarAdministrador()">🔓 Acessar Painel Completo</button>
             </div>
         </div>
 
-        <!-- 👑 PAINEL ADMINISTRATIVO — SEU DOMÍNIO TOTAL -->
+        <!-- 👑 PAINEL ADMINISTRATIVO -->
         <div id="telaAdmin" class="tela-admin">
             <h1>👑 Painel Administrativo — Controle Total</h1>
-            <button class="btn-sair" onclick="sairSistema()">🚪 Sair</button>
+            <button class="btn-voltar-adm" onclick="voltarParaAdmin()">⬅️ Voltar ao Painel</button>
+            <button class="btn-sair" onclick="sairSistema()">🚪 Sair do Sistema</button>
 
             <div class="painel-admin">
                 <h3>📋 Todos os Usuários e Senhas</h3>
@@ -335,6 +372,9 @@
         <!-- 📋 TELA DE REGISTRO DE ENTREGAS -->
         <div id="telaDados" class="tela-dados">
             <h1>📋 Registro de Entregas</h1>
+            
+            <!-- 👑 BOTÃO DE VOLTAR SÓ PARA ADMINISTRADOR -->
+            <button id="btnVoltarPainel" class="btn-voltar-adm" style="display:none;" onclick="voltarParaPainelAdmin()">⬅️ Voltar ao Painel Admin</button>
             
             <div class="usuario-atual">
                 👤 <span id="mostraUsuario"></span>
@@ -374,14 +414,26 @@
     </div>
 
     <script>
-        // 👑 SENHA MESTRA — SÓ VOCÊ SABE! ALTERE AQUI!
-        const SENHA_MESTRA = 'juninho2026'; // ← MUDE PARA A SUA SENHA!
+        // 👑 SENHA MESTRA
+        const SENHA_MESTRA = 'juninho2026';
         const CHAVE_PRINCIPAL = 'sistema_entregas_dados';
         
         let usuarioAtual = null;
         let senhaAtual = null;
+        let veioDoAdmin = false; // Marca se entrou pelo painel admin
 
-        // === FUNÇÕES DE DADOS ===
+        // 👁️ FUNÇÃO MOSTRAR/ESCONDER SENHA — VALE PARA TODOS!
+        function mostrarSenha(idInput, botao) {
+            const input = document.getElementById(idInput);
+            if (input.type === 'password') {
+                input.type = 'text';
+                botao.textContent = '🙈';
+            } else {
+                input.type = 'password';
+                botao.textContent = '👁️';
+            }
+        }
+
         function pegarTodosDados() {
             const todos = localStorage.getItem(CHAVE_PRINCIPAL);
             return todos ? JSON.parse(todos) : {};
@@ -391,7 +443,7 @@
             localStorage.setItem(CHAVE_PRINCIPAL, JSON.stringify(dados));
         }
 
-        // === 👑 PAINEL ADMINISTRATIVO — SEU CONTROLE TOTAL ===
+        // === 👑 PAINEL ADMINISTRATIVO ===
         function entrarAdministrador() {
             const senhaDigitada = document.getElementById('senhaMestraInput').value.trim();
             
@@ -405,14 +457,12 @@
                 return;
             }
 
-            // Abre o painel completo com TODOS os usuários e senhas
             document.getElementById('telaSenha').style.display = 'none';
             document.getElementById('telaAdmin').style.display = 'block';
             listarTodosUsuarios();
-            alert('👑 Acesso Administrador concedido! Você tem controle total do sistema!');
+            alert('👑 Acesso Administrador concedido! Controle Total do Sistema!');
         }
 
-        // Lista TODOS os usuários com suas SENHAS — você vê tudo!
         function listarTodosUsuarios() {
             const todosDados = pegarTodosDados();
             const lista = document.getElementById('listaUsuarios');
@@ -447,17 +497,34 @@
             }
         }
 
-        // Entra como qualquer usuário — vê os dados dele
+        // Entra como usuário pelo painel ADMIN — mostra botão de VOLTAR
         function entrarComoUsuario(nome, senha) {
+            veioDoAdmin = true; // Marca que veio do painel
             usuarioAtual = nome;
             senhaAtual = senha;
             document.getElementById('telaAdmin').style.display = 'none';
             document.getElementById('telaDados').style.display = 'block';
             document.getElementById('mostraUsuario').textContent = nome;
+            document.getElementById('btnVoltarPainel').style.display = 'flex'; // Mostra botão voltar
             atualizarTela();
         }
 
-        // Altera a senha de qualquer usuário
+        // 👑 VOLTAR PARA O PAINEL ADMINISTRATIVO
+        function voltarParaPainelAdmin() {
+            usuarioAtual = null;
+            senhaAtual = null;
+            document.getElementById('telaDados').style.display = 'none';
+            document.getElementById('telaAdmin').style.display = 'block';
+            document.getElementById('btnVoltarPainel').style.display = 'none';
+            listarTodosUsuarios();
+        }
+
+        function voltarParaAdmin() {
+            document.getElementById('telaAdmin').style.display = 'none';
+            document.getElementById('telaSenha').style.display = 'block';
+            document.getElementById('senhaMestraInput').value = '';
+        }
+
         function alterarSenhaUsuario(nome, senhaAntiga) {
             const novaSenha = prompt(`Digite a NOVA senha para ${nome}:`);
             if (!novaSenha) return;
@@ -471,16 +538,14 @@
                 return;
             }
 
-            // Move os dados para a nova senha
             delete todosDados[chaveAntiga];
             todosDados[`usuario_${nome}_${novaSenha}`] = dados;
             salvarTodosDados(todosDados);
 
             alert(`✅ Senha alterada com sucesso!\nUsuário: ${nome}\nNova senha: ${novaSenha}`);
-            listarTodosUsuarios(); // Atualiza a lista
+            listarTodosUsuarios();
         }
 
-        // Exclui um usuário COMPLETAMENTE do sistema
         function excluirUsuarioCompleto(nome, senha) {
             if (!confirm(`⚠️ Tem CERTEZA que deseja EXCLUIR o usuário "${nome}" e TODOS os seus registros?\nEsta ação não pode ser desfeita!`)) {
                 return;
@@ -497,6 +562,7 @@
 
         // === 🔑 ENTRADA NORMAL DOS ENTREGADORES ===
         function entrarSistema() {
+            veioDoAdmin = false; // Entrou normal — não mostra botão voltar admin
             const nome = document.getElementById('nomeUsuario').value.trim();
             const senha = document.getElementById('senhaUsuario').value.trim();
 
@@ -507,7 +573,6 @@
             const todosDados = pegarTodosDados();
             const chaveUsuario = `usuario_${nome}_${senha}`;
 
-            // Cria automaticamente se não existir
             if (!todosDados[chaveUsuario]) {
                 todosDados[chaveUsuario] = { nome, entregas: [] };
                 salvarTodosDados(todosDados);
@@ -519,6 +584,7 @@
             document.getElementById('telaSenha').style.display = 'none';
             document.getElementById('telaDados').style.display = 'block';
             document.getElementById('mostraUsuario').textContent = nome;
+            document.getElementById('btnVoltarPainel').style.display = 'none'; // Não mostra para entregador
             atualizarTela();
         }
 
@@ -526,15 +592,17 @@
         function sairSistema() {
             usuarioAtual = null;
             senhaAtual = null;
+            veioDoAdmin = false;
             document.getElementById('telaSenha').style.display = 'block';
             document.getElementById('telaDados').style.display = 'none';
             document.getElementById('telaAdmin').style.display = 'none';
             document.getElementById('nomeUsuario').value = '';
             document.getElementById('senhaUsuario').value = '';
             document.getElementById('senhaMestraInput').value = '';
+            document.getElementById('btnVoltarPainel').style.display = 'none';
         }
 
-        // === 📊 FUNÇÕES DE REGISTRO DE ENTREGAS ===
+        // === 📊 FUNÇÕES DE REGISTRO ===
         function pegarMeusDados() {
             const todosDados = pegarTodosDados();
             const chaveUsuario = `usuario_${usuarioAtual}_${senhaAtual}`;
