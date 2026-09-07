@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Registro de Entregas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: sans-serif;
+        }
+
+        body {
+            background-color: #0a2463;
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 450px;
+            margin: 0 auto;
+            background: #fff;
+            color: #000;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        h1 {
+            text-align: center;
+            color: #0a2463;
+            margin-bottom: 25px;
+            font-size: 22px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #0a2463;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background-color: #0a2463;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 5px;
+        }
+
+        button:hover {
+            background-color: #0d3080;
+        }
+
+        .resumo {
+            margin-top: 25px;
+            padding: 20px;
+            background: #f0f4f8;
+            border-radius: 12px;
+        }
+
+        .resumo h2 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #0a2463;
+        }
+
+        .valor-total {
+            font-size: 26px;
+            font-weight: bold;
+            color: #228B22;
+            margin-top: 10px;
+        }
+
+        .lista-entregas {
+            margin-top: 20px;
+        }
+
+        .entrega-item {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn-excluir {
+            background: #dc3545;
+            padding: 6px 10px;
+            font-size: 14px;
+            width: auto;
+            margin: 0;
+        }
+
+        .btn-excluir:hover {
+            background: #c82333;
+        }
+
+        .data-texto {
+            font-size: 12px;
+            color: #666;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📋 Registro de Entregas</h1>
+
+        <div class="input-group">
+            <label>Valor da nota (R$)</label>
+            <input type="number" id="valorNota" step="0.01" placeholder="Ex: 25.90">
+        </div>
+
+        <div class="input-group">
+            <label>Taxa de entrega (R$)</label>
+            <input type="number" id="taxaEntrega" step="0.01" placeholder="Ex: 5.00">
+        </div>
+
+        <div class="input-group">
+            <label>Bairro / Região</label>
+            <select id="bairro">
+                <option value="Tijuco">Tijuco</option>
+                <option value="Região intermediária">Região intermediária</option>
+                <option value="Além do Paraguai">Além do Paraguai</option>
+                <option value="Outro">Outro</option>
+            </select>
+        </div>
+
+        <button onclick="registrarEntrega()">✅ Registrar Entrega</button>
+
+        <div class="resumo">
+            <h2>📊 Resumo</h2>
+            <p>Total de entregas: <span id="qtdEntregas">0</span></p>
+            <p>Valor total das taxas:</p>
+            <p class="valor-total">R$ <span id="valorTotal">0,00</span></p>
+
+            <div class="lista-entregas">
+                <h3 style="margin-top:15px; font-size:16px; color:#0a2463;">Histórico</h3>
+                <div id="lista"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let entregas = [];
+
+        // Carregar dados salvos ao abrir a página
+        function carregarDados() {
+            const dadosSalvos = localStorage.getItem('entregas');
+            if (dadosSalvos) {
+                entregas = JSON.parse(dadosSalvos);
+                atualizarTela();
+            }
+        }
+
+        // Salvar no localStorage
+        function salvarDados() {
+            localStorage.setItem('entregas', JSON.stringify(entregas));
+        }
+
+        // Registrar nova entrega
+        function registrarEntrega() {
+            const valorNota = parseFloat(document.getElementById('valorNota').value) || 0;
+            const taxaEntrega = parseFloat(document.getElementById('taxaEntrega').value) || 0;
+            const bairro = document.getElementById('bairro').value;
+
+            if (taxaEntrega === 0) {
+                alert('Por favor, digite o valor da taxa de entrega!');
+                return;
+            }
+
+            const entrega = {
+                id: Date.now(),
+                valorNota,
+                taxaEntrega,
+                bairro,
+                data: new Date().toLocaleString('pt-BR')
+            };
+
+            entregas.push(entrega);
+            salvarDados();
+            atualizarTela();
+
+            // Limpar campos
+            document.getElementById('valorNota').value = '';
+            document.getElementById('taxaEntrega').value = '';
+        }
+
+        // Excluir entrega
+        function excluirEntrega(id) {
+            if (confirm('Tem certeza que deseja excluir?')) {
+                entregas = entregas.filter(e => e.id !== id);
+                salvarDados();
+                atualizarTela();
+            }
+        }
+
+        // Atualizar toda a tela
+        function atualizarTela() {
+            const qtd = entregas.length;
+            const total = entregas.reduce((soma, e) => soma + e.taxaEntrega, 0);
+
+            document.getElementById('qtdEntregas').textContent = qtd;
+            document.getElementById('valorTotal').textContent = total.toFixed(2).replace('.', ',');
+
+            const lista = document.getElementById('lista');
+            lista.innerHTML = '';
+
+            entregas.forEach(e => {
+                const item = document.createElement('div');
+                item.className = 'entrega-item';
+                item.innerHTML = `
+                    <div>
+                        <span class="data-texto">${e.data}</span>
+                        <strong>${e.bairro}</strong> — R$ ${e.taxaEntrega.toFixed(2).replace('.', ',')}
+                    </div>
+                    <button class="btn-excluir" onclick="excluirEntrega(${e.id})">X</button>
+                `;
+                lista.appendChild(item);
+            });
+        }
+
+        // Iniciar ao carregar a página
+        carregarDados();
+    </script>
+</body>
+</html>
